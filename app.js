@@ -16,13 +16,9 @@ app.use(express.urlencoded({ extended: false }));
   try {
     const dbInfo = await db.connectDB(process.env.MONGO_URI);
     if (dbInfo) {
-      // logger.info(
-      //   `Connected to MongoDB successfully ${dbInfo.connection.host}`
-      // );
       console.log( `Connected to MongoDB successfully ${dbInfo.connection.host}`)
     }
   } catch (error) {
-    // logger.info(`Connected to DB failed ${error}`);
     console.log(`Connected to DB failed ${error}`)
   }
 })();
@@ -36,11 +32,12 @@ const limiter = rateLimit({
   max: 100 // limit each IP to 100 requests per windowMs
 });
 
-//  apply to all requests
+//apply to all requests
 app.use(limiter);
 
 //Routes
 app.use('/api/v1/auth', require('./routers/auth.router'));
+app.use('/api/v1/user', require('./routers/user.router'));
 
 app.use('*', (req, res) => {
   res.status(200).send({

@@ -55,7 +55,7 @@ UserSchema.methods.getSignedJwtToken = function () {
         username: this.username,
         email: this.email
     }, process.env.JWT_SECRET, {
-        expiresIn: '1m'
+        expiresIn: '30'
     });
 };
 
