@@ -1,6 +1,6 @@
 module.exports = {
     REQUEST_TIMEOUT: {
-      code: 5000,
+      code: 500,
       codeError: 'REQUEST_TIMEOUT',
       message: 'Request Timeout',
       type: 'INTERNAL'
