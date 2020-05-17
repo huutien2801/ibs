@@ -1,4 +1,6 @@
 const User = require('../models/users.model');
+const Partner = require('../models/partner.model');
+const BankAccount = require('../models/bank_account.model');
 const jwt = require('jsonwebtoken');
 const ErrorCode = require('../config/ErrorCode');
 const md5 = require('md5');
@@ -72,11 +74,25 @@ const getInfoUser = (req, res, next) => {
 }
 
 //API Recharging money in account from others bank
-const rechargeMoneyInAccount = (req, res, next) => {
+const rechargeMoneyInAccount = async(req, res, next) => {
     //If parnertCode is invalid
     let partnerCode = req.query.partnerCode
     //Call to DB to check partner 
     if (!partnerCode) {
+        return res.status(ErrorCode.INVALID_PARAMETER.code).json({
+            message: ErrorCode.INVALID_PARAMETER.message
+        });
+    }
+
+    let partner = await Partner.findOne({ partnerCode }).
+    exec(function(err, Partner){
+        if (err) { 
+            return res.json({
+                message: err
+            });
+        }
+    });
+    if (!partner){
         return res.status(400).json({
             message: "Your bank is not my partner. Please connect to my bank and call API later"
         });
@@ -118,8 +134,11 @@ const rechargeMoneyInAccount = (req, res, next) => {
             message: 'Lack of your signature. Please fill it into header'
         });
     }
+ 
+    let secretKey = partner.partnerSecretKey
+    let hashSecretKey = md5(secretKey)
     let body = req.body
-    let hashStr = md5(body + secondRequestedDate)
+    let hashStr = md5(body + secondRequestedDate + hashSecretKey)
     if (hashStr !== req.headers.sig) {
         return res.status(400).json({
             message: 'Your request is updated by someone'
@@ -130,25 +149,41 @@ const rechargeMoneyInAccount = (req, res, next) => {
     //If partner using RSA 
     //Get keyPrivate of partner to verify
     //Call to DB to get keyPrivate of partner
-    let keyPrivateStr = "-----BEGIN RSA PRIVATE KEY-----" +
-    "MIIBOwIBAAJBAL5t2Sxzw8uXW0eWPlfRWUNrF0y2JbjB5XzusIiUtPo+zSmrMByr\n" +
-    "jMlIEEdX7sZct/zANGhsrrRovSMKV7EkoKkCAwEAAQJBALJcoTWJmLJwqgZ7KxmF\n" +
-    "9F25SLGJSfurYQ+LYb4Lyxc3bRmHqKH/CuenKf9MOZ9nVs0Wwt+4UjdsCD7wE+JS\n" +
-    "OaECIQDpxo/kw3PrVycMD6bXtX8FkPDgkJvzy1pXZgUEEfS7JwIhANCIWqSfe5J4\n" +
-    "jz5Pa7kZM/Mg2gmU6GB+5m3VV3TXlGevAiEAyOQHN3D2pmBof6bbmzauhxv8wx3B\n" +
-    "xokTg1N6L/s2MbUCID6cQgLdc3+1vORreh94JrXf7jckQ2T9lPfzLzAArik3AiAc\n" +
-    "j3rbSsZDYdfJF+7Y1lsKCHDeRByHs5oLe6S9F0UBMQ==\n" +
-    "-----END RSA PRIVATE KEY-----"
+    // let keyPrivateStr = "-----BEGIN RSA PRIVATE KEY-----" +
+    // "MIIBOwIBAAJBAL5t2Sxzw8uXW0eWPlfRWUNrF0y2JbjB5XzusIiUtPo+zSmrMByr\n" +
+    // "jMlIEEdX7sZct/zANGhsrrRovSMKV7EkoKkCAwEAAQJBALJcoTWJmLJwqgZ7KxmF\n" +
+    // "9F25SLGJSfurYQ+LYb4Lyxc3bRmHqKH/CuenKf9MOZ9nVs0Wwt+4UjdsCD7wE+JS\n" +
+    // "OaECIQDpxo/kw3PrVycMD6bXtX8FkPDgkJvzy1pXZgUEEfS7JwIhANCIWqSfe5J4\n" +
+    // "jz5Pa7kZM/Mg2gmU6GB+5m3VV3TXlGevAiEAyOQHN3D2pmBof6bbmzauhxv8wx3B\n" +
+    // "xokTg1N6L/s2MbUCID6cQgLdc3+1vORreh94JrXf7jckQ2T9lPfzLzAArik3AiAc\n" +
+    // "j3rbSsZDYdfJF+7Y1lsKCHDeRByHs5oLe6S9F0UBMQ==\n" +
+    // "-----END RSA PRIVATE KEY-----"
 
-    const keyPrivate = new NodeRSA(keyPrivateStr)
+    //const keyPrivate = new NodeRSA(keyPrivateStr)
+    const keyPrivate = new NodeRSA(partner.secretKey)
     let isSuccess = keyPrivate.verify(body, sign, "base64", "base64")
 
     //Verify success
     if(isSuccess == true){
         //Call to DB to update money
-    }else{
-        return res.status(400).json({
-            message: 'Verify your signature failed.'
+        const filter = { userId: req.body.userId };
+        const update = { balance:  req.body.newBalance};
+        await BankAccount.findOneAndUpdate(filter, update)
+        .exec(function(err){
+            if (err) { 
+                return res.status(400).json({
+                    message: err
+                });
+            }
         });
     }
+    return res.status(400).json({
+        message: 'Verify your signature failed.'
+    });
+    
 }
+
+module.exports = {
+    getInfoUser,
+    rechargeMoneyInAccount,
+};

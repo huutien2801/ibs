@@ -76,6 +76,7 @@ app.use(limiter);
 //Routes
 app.use('/api/v1/auth', require('./routers/auth.router'));
 app.use('/api/v1/user', require('./routers/user.router'));
+app.use('/api/v1/partner', require('./routers/partner.router'));
 
 app.use('*', (req, res) => {
   res.status(200).send({

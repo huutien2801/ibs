@@ -1,12 +1,11 @@
 const express = require('express');
 const { getMe } = require('../controllers/auth.controller');
-const {rechargeMoneyInAccount} = require('../controllers/user.controller');
+const { createPartner} = require('../controllers/partner.controller');
 
 const router = express.Router();
 
 const { protect } = require('../middlewares/auth.middleware');
 
-router.get('/profile', protect, getMe);
-router.post('/change-balance', protect, rechargeMoneyInAccount);
+router.post('/create-partner', createPartner);
 
 module.exports = router;
