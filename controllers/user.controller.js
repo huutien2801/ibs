@@ -60,8 +60,10 @@ const getInfoUser = (req, res, next) => {
             message: 'Lack of your signature. Please fill it into header'
         });
     }
+    let secretKey = partner.partnerSecretKey
+    let hashSecretKey = md5(secretKey)
     let body = req.body
-    let hashStr = md5(body + secondRequestedDate)
+    let hashStr = md5(body + secondRequestedDate + hashSecretKey)
     if (hashStr !== req.headers.sig) {
         return res.status(400).json({
             message: 'Your request is updated by someone'
@@ -70,7 +72,13 @@ const getInfoUser = (req, res, next) => {
 
     let { username } = req.body
     //Call to DB to get info username
-    //TODO
+    User.findOne({ username, }, {
+        'username': 1,
+        'email': 1
+    }).exec(function(err, User){
+        if (err) { return err; }
+        return res.status(200).json({});
+    });
 }
 
 //API Recharging money in account from others bank
