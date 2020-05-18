@@ -13,6 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 
+
 //RSA
 // const NodeRSA = require('node-rsa');
 
@@ -50,16 +51,16 @@ app.use(express.urlencoded({ extended: false }));
 
 //============================================
 // Connect DB
-// (async () => {
-//   try {
-//     const dbInfo = await db.connectDB(process.env.MONGO_URI);
-//     if (dbInfo) {
-//       console.log( `Connected to MongoDB successfully ${dbInfo.connection.host}`)
-//     }
-//   } catch (error) {
-//     console.log(`Connected to DB failed ${error}`)
-//   }
-// })();
+(async () => {
+  try {
+    const dbInfo = await db.connectDB(process.env.MONGO_URI);
+    if (dbInfo) {
+      console.log( `Connected to MongoDB successfully ${dbInfo.connection.host}`)
+    }
+  } catch (error) {
+    console.log(`Connected to DB failed ${error}`)
+  }
+})();
 
 // Enable CORS
 app.use(cors());
@@ -77,6 +78,7 @@ app.use(limiter);
 app.use('/api/v1/auth', require('./routers/auth.router'));
 app.use('/api/v1/user', require('./routers/user.router'));
 app.use('/api/v1/partner', require('./routers/partner.router'));
+app.use('/api/v1/bank-account', require('./routers/bank_account.router'));
 
 app.use('*', (req, res) => {
   res.status(200).send({

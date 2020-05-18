@@ -10,12 +10,15 @@ const BankAccountSchema = mongoose.Schema({
     },
     bank_account_type:{
         type:Number,
+        require: true
     },
     balance:{
         type:Number,
+        require: true
     },
     user_id:{
         type:Number,
+        require: true
     },
     created_at: {
         type: Date,

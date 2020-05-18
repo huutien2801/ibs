@@ -17,7 +17,6 @@ const PartnerSchema = mongoose.Schema({
     },
     partnerName: {
         type: String,
-        required: true
     },
     partnerPublicKey: {
         type: String,

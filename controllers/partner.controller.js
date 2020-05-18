@@ -6,14 +6,30 @@ require('dotenv').config({
     path: './config/config.env',
 });
 
-//API Recharging money in account from others bank
+//API create partner
 const createPartner = async(req, res, next) => {
-    let partner = req.body
+    const {partnerCode, partnerName, partnerPublicKey, partnerSecretKey} = req.body
 
-    let resp = Partner.create(partner);
-    return res.json({
-        data: resp
+    if(partnerCode == "" || partnerPublicKey == "" || partnerSecretKey == ""){
+        return res.status(400).json({
+            message: "INVALID BODY"
+        })
+    }
+
+    let resp = await Partner.create({
+        partnerCode,
+        partnerName,
+        partnerPublicKey,
+        partnerSecretKey
     });
+    if(resp){
+        return res.status(200).json({
+            data: resp
+        });
+    }
+    return res.status(400).json({
+        message: "Can't create partner at this time."
+    })
 }
 
 module.exports = {
