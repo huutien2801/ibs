@@ -18,7 +18,16 @@ const getInfoUser = (req, res, next) => {
     //If parnertCode is invalid
     let partnerCode = req.query.partnerCode
     //Call to DB to check partner 
-    if (!partnerCode) {
+    let partner = await Partner.findOne({ partnerCode }).
+    exec(function(err, Partner){
+        if (err) { 
+            return res.json({
+                message: err
+            });
+        }
+    });
+
+    if (!partner) {
         return res.status(400).json({
             message: "Your bank is not my partner. Please connect to my bank and call API later"
         });
@@ -72,7 +81,7 @@ const getInfoUser = (req, res, next) => {
 
     let { username } = req.body
     //Call to DB to get info username
-    User.findOne({ username, }, {
+    User.findOne({ username }, {
         'username': 1,
         'email': 1
     }).exec(function(err, User){
