@@ -1,6 +1,4 @@
 const Partner = require('../models/partner.model');
-const md5 = require('md5');
-const NodeRSA = require('node-rsa');
 
 require('dotenv').config({
     path: './config/config.env',

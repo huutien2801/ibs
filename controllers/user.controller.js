@@ -13,19 +13,11 @@ require('dotenv').config({
 //Expose two API for others bank
 
 //API get info account on service
-const getInfoUser = (req, res, next) => {
-
+const getInfoUser = async(req, res, next) => {
     //If parnertCode is invalid
     let partnerCode = req.query.partnerCode
     //Call to DB to check partner 
-    let partner = await Partner.findOne({ partnerCode }).
-    exec(function(err, Partner){
-        if (err) { 
-            return res.json({
-                message: err
-            });
-        }
-    });
+    let partner = await Partner.findOne({ partnerCode });
 
     if (!partner) {
         return res.status(400).json({
@@ -81,13 +73,22 @@ const getInfoUser = (req, res, next) => {
 
     let { username } = req.body
     //Call to DB to get info username
-    User.findOne({ username }, {
+    let userRS = await User.findOne({ username }, {
         'username': 1,
         'email': 1
-    }).exec(function(err, User){
-        if (err) { return err; }
-        return res.status(200).json({});
     });
+
+    if (userRS) {
+        console.log(userRS);
+        return res.status(200).json({
+            data: userRS,
+            message: "Get user succeed."
+        });
+    }
+
+    return res.status(400).json({
+        message: "Can't get user"
+    })
 }
 
 //API Recharging money in account from others bank
@@ -101,14 +102,7 @@ const rechargeMoneyInAccount = async(req, res, next) => {
         });
     }
 
-    let partner = await Partner.findOne({ partnerCode }).
-    exec(function(err, Partner){
-        if (err) { 
-            return res.json({
-                message: err
-            });
-        }
-    });
+    let partner = await Partner.findOne({ partnerCode });
     if (!partner){
         return res.status(400).json({
             message: "Your bank is not my partner. Please connect to my bank and call API later"
@@ -183,21 +177,28 @@ const rechargeMoneyInAccount = async(req, res, next) => {
     //Verify success
     if(isSuccess == true){
         //Call to DB to update money
-        const filter = { userId: req.body.userId };
-        const update = { balance:  req.body.newBalance};
-        await BankAccount.findOneAndUpdate(filter, update)
-        .exec(function(err){
-            if (err) { 
-                return res.status(400).json({
-                    message: err
-                });
-            }
+        const {userId, newBalance} = req.body;
+        if(!userId || !newBalance){
+            return res.status(400).json({
+                message: "Invalid body."
+            });
+        }
+        const filter = { user_id: userId };
+        const update = { balance:  newBalance};
+        let resp = await BankAccount.findOneAndUpdate(filter, update);
+        if (resp){
+            return res.status(200).json({
+                data: resp,
+                message: "Update money succeed."
+            });
+        }
+        return res.status(400).json({
+            message: "Can't update money at this time."
         });
     }
     return res.status(400).json({
         message: 'Verify your signature failed.'
     });
-    
 }
 
 //API create user use bank
@@ -212,7 +213,7 @@ const createUser = async(req, res, next) => {
         })
     }
 
-    const user = await User.create({
+    let user = await User.create({
         username,
         email,
         password,
@@ -225,14 +226,16 @@ const createUser = async(req, res, next) => {
         })
     }
 
+    console.log(user);
+
     await BankAccount.create({
-        userId: user.user_id,
+        user_id: user.user_id,
         bankAccountType: 1,
         balance: 0,
     });
 
     res.status(200).json({
-        message: "Create"
+        message: "Created"
     })
 }
 

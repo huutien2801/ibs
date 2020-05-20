@@ -8,7 +8,7 @@ const { protect } = require('../middlewares/auth.middleware');
 
 router.get('/profile', protect, getMe);
 router.post('/change-balance', rechargeMoneyInAccount);
-router.get('/getInfoUser', getInfoUser);
+router.get('', getInfoUser);
 router.post('/create', createUser);
 
 module.exports = router;

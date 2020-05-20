@@ -5,9 +5,6 @@ require('dotenv').config({
 });
 
 const BankAccountSchema = mongoose.Schema({
-    bank_account_id: {
-        type: Number,
-    },
     bank_account_type:{
         type:Number,
         require: true
@@ -30,5 +27,4 @@ const BankAccountSchema = mongoose.Schema({
     },
 });
 
-BankAccountSchema.plugin(AutoIncrement, { inc_field: 'bank_account_id' });
 module.exports = mongoose.model('BankAccount', BankAccountSchema);
