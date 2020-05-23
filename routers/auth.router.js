@@ -1,9 +1,9 @@
 const express = require('express');
 const {
-    registerEmployee,
-      login,
-    logout,
-    refresh,
+  registerEmployee,
+  login,
+  logout,
+  refresh,
 } = require("../controllers/auth.controller");
 
 const router = express.Router();

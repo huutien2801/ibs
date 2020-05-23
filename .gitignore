@@ -1,9 +1,8 @@
 node_modules
+rsa
 
 .DS_Store
-.env
-
-config.env
+*.env
 
 .next
 
