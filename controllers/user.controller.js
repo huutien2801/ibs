@@ -182,8 +182,8 @@ const rechargeMoneyInAccount = async (req, res, next) => {
     let sign = req.headers.sign
     let isSuccess
     if (partner.encrypt_type == "RSA") {
-        // const keyPublic = new NodeRSA(partner.partner_public_key)
-        const keyPublic = new NodeRSA(process.env.RSA_PUBLIC_KEY)
+        const keyPublic = new NodeRSA(partner.partner_public_key)
+        // const keyPublic = new NodeRSA(process.env.RSA_PUBLIC_KEY)
         isSuccess = keyPublic.verify(body, sign, "base64", "base64")
     } else {
         const verified = await openpgp.verify({
