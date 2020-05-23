@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const AutoIncrement = require('mongoose-sequence')(mongoose);
 require('dotenv').config({
     path: 'config/config.env'
 });
@@ -7,6 +6,10 @@ require('dotenv').config({
 const BankAccountSchema = mongoose.Schema({
     bank_account_type:{
         type:Number,
+        require: true
+    },
+    bank_account_id:{
+        type: Number,
         require: true
     },
     balance:{

@@ -19,7 +19,7 @@ const createBankAccount = async(req, res, next) => {
         });
     }
     return res.status(400).json({
-        message: "Can't create partner at this time."
+        message: "Can't create bank account at this time."
     })
 }
 

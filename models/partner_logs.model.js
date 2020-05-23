@@ -1,32 +1,26 @@
 const mongoose = require('mongoose');
-const AutoIncrement = require('mongoose-sequence')(mongoose);
 require('dotenv').config({
     path: 'config/config.env'
 });
 
-const PartnerSchema = mongoose.Schema({
+
+
+const PartnerLogsSchema = mongoose.Schema({
     partner_code: {
         type: String,
         required: true
     },
-    partner_name: {
-        type: String,
-    },
-    partner_public_key: {
+    method: {
         type: String,
         required: true
     },
-    partner_secret_key: {
+    request_type: {
         type: String,
         required: true
     },
-    encrypt_type:{
-        type: String,
+    request_time:{
+        type: Number,
         required: true
-    },
-    passphrase:{
-        type: String,
-        required: true,
     },
     created_at: {
         type: Date,
@@ -39,4 +33,4 @@ const PartnerSchema = mongoose.Schema({
 });
 
 // PartnerSchema.plugin(AutoIncrement, { inc_field: 'partner_id' });
-module.exports = mongoose.model('Partner', PartnerSchema);
+module.exports = mongoose.model('PartnerLog', PartnerLogsSchema);

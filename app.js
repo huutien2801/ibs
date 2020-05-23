@@ -5,17 +5,27 @@ const rateLimit = require("express-rate-limit");
 const db = require('./db');
 const app = express();
 const fs = require("fs");
-
+const md5 = require('md5');
 // Load env vars
 dotenv.config({ path: './config/config.env' });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-
+// Connect DB
+(async () => {
+  try {
+    const dbInfo = await db.connectDB(process.env.MONGO_URI);
+    if (dbInfo) {
+      console.log(`Connected to MongoDB successfully ${dbInfo.connection.host}`)
+    }
+  } catch (error) {
+    console.log(`Connected to DB failed ${error}`)
+  }
+})();
 
 //RSA
-// const NodeRSA = require('node-rsa');
+const NodeRSA = require('node-rsa');
 
 // let keyPublicStr = "-----BEGIN PUBLIC KEY-----\n" +
 //   "MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAL5t2Sxzw8uXW0eWPlfRWUNrF0y2JbjB\n" +
@@ -28,40 +38,35 @@ app.use(express.urlencoded({ extended: false }));
 //   "OaECIQDpxo/kw3PrVycMD6bXtX8FkPDgkJvzy1pXZgUEEfS7JwIhANCIWqSfe5J4\n" +
 //   "jz5Pa7kZM/Mg2gmU6GB+5m3VV3TXlGevAiEAyOQHN3D2pmBof6bbmzauhxv8wx3B\n" +
 //   "xokTg1N6L/s2MbUCID6cQgLdc3+1vORreh94JrXf7jckQ2T9lPfzLzAArik3AiAc\n" +
-//   "j3rbSsZDYdfJF+7Y1lsKCHDeRByHs5oLe6S9F0UBMQ==\n" +
+//   "j3rbSsZDYdfJF+7Y1lsKCHDeRByHs5oLed6S9F0UBMQ==\n" +
 //   "-----END RSA PRIVATE KEY-----"
-// const keyPublic = new NodeRSA(process.env.RSA_PUBLIC_KEY)
-// const keyPrivate = new NodeRSA(process.env.RSA_PRIVATE_KEY)
-// const keyPublic = new NodeRSA(keyPublicStr)
-// const keyPrivate = new NodeRSA(keyPrivateStr)
-// const temp = {
-//   userName: "Lâm Hửu Tiền",
-//   age: 23
-// }
+const keyPublic = new NodeRSA(process.env.RSA_PUBLIC_KEY)
+const keyPrivate = new NodeRSA(process.env.RSA_PRIVATE_KEY)
 
-// const encrypted = keyPublic.encrypt(temp, 'base64');
-// console.log('encrypted: ', encrypted);
+// const { keys: [privateKey] } = await openpgp.key.readArmored(ourPrivateKey)
+// await privateKey.decrypt(passphrase)
 
-// const decrypted = keyPrivate.decrypt(encrypted, 'json');
-// console.log('decrypted: ', decrypted);
+// let { data: digitalSignature } = await openpgp.sign({
+//   message: openpgp.cleartext.fromText(accountId), // CleartextMessage or Message object
+//   privateKeys: [privateKey]                             // for signing
+// });
 
-// let sign = keyPrivate.sign(temp, "base64", "base64");
+let currentDate = new Date()
+let secondCurrentDate = currentDate.getTime()
+console.log(secondCurrentDate)
 
-// let a = keyPrivate.verify(temp, sign, "base64", "base64")
+let hashSecretKey = md5("dungnoiaihet")
+let body = {
+  accountId: 123456789,
+  cost: 5
+}
+let hashStr = md5(body + secondCurrentDate + hashSecretKey)
 
-//============================================
-// Connect DB
-(async () => {
-  try {
-    const dbInfo = await db.connectDB(process.env.MONGO_URI);
-    if (dbInfo) {
-      console.log( `Connected to MongoDB successfully ${dbInfo.connection.host}`)
-    }
-  } catch (error) {
-    console.log(`Connected to DB failed ${error}`)
-  }
-})();
+console.log(hashStr)
 
+let sign = keyPrivate.sign(body, "base64", "base64");
+console.log("Sign: ", sign)
+let a = keyPublic.verify(body, sign, "base64", "base64")
 // Enable CORS
 app.use(cors());
 
