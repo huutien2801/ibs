@@ -61,7 +61,7 @@ const getInfoUser = async (req, res, next) => {
     }
 
     //Call to DB to get info username
-    let { accountId } = req.body
+    let  accountId  = req.query.accountId
     let account = await BankAccount.findOne({ bank_account_id: accountId })
 
     if (!account) {
