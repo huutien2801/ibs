@@ -10,31 +10,62 @@ require('dotenv').config({
 const UserSchema = mongoose.Schema({
     user_id: {
         type: Number,
+        required: true
     },
     username: {
         type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
         required: true
+    },
+    pin: {
+        type: String,
+        required: true
+    },
+    account_number: {
+        type: String,
+        required: true,
+        unique: true
     },
     full_name:{
         type: String,
         required: true
     },
+    nick_name: {
+        type: String,
+    },
     email: {
         type: String,
         unique: true
     },
-    password: {
+    phone: {
         type: String,
-    },
-    role_id: {
-        type: Number,
         required: true
     },
-    created_at: {
+    identity_number: {
+        type: String,
+        required: true
+    },
+    address: {
+        type: String,
+        required: true
+    },
+    dob: {
+        type: Date,
+        required: true
+    },
+    balance: {
+        type: double,
+        default: 0
+    },
+    register_date: {
         type: Date,
         default: Date.now
     },
-    updated_at: {
+    updated_date: {
         type: Date,
         default: Date.now
     },
