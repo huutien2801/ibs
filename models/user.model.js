@@ -12,17 +12,8 @@ const UserSchema = mongoose.Schema({
         type: Number,
         required: true
     },
-    username: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    pin: {
-        type: String,
+    type: {
+        type: Number,
         required: true
     },
     account_number: {
@@ -30,31 +21,8 @@ const UserSchema = mongoose.Schema({
         required: true,
         unique: true
     },
-    full_name:{
+    pin: {
         type: String,
-        required: true
-    },
-    nick_name: {
-        type: String,
-    },
-    email: {
-        type: String,
-        unique: true
-    },
-    phone: {
-        type: String,
-        required: true
-    },
-    identity_number: {
-        type: String,
-        required: true
-    },
-    address: {
-        type: String,
-        required: true
-    },
-    dob: {
-        type: Date,
         required: true
     },
     balance: {
@@ -64,6 +32,29 @@ const UserSchema = mongoose.Schema({
     register_date: {
         type: Date,
         default: Date.now
+    },
+    expired_date: {
+        type: Date,
+        default: Date.now
+    },
+    ratio_id: {
+        type: Number,
+        required: true
+    },
+    deposit: {
+        type: Number,
+        required: true
+    },
+    deposit_date: {
+        type: Date,
+        default: Date.now
+    },
+    redeem: {
+        type: Number,
+        required: true
+    },
+    redeem_date: {
+        type: Date,
     },
     updated_date: {
         type: Date,

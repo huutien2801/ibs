@@ -3,29 +3,18 @@ require('dotenv').config({
     path: 'config/config.env'
 });
 
-const RemindSchema = mongoose.Schema({
-    remind_id:{
+const ExchangeMoneySchema = mongoose.Schema({
+    exchange_user_id:{
         type:Number,
         required: true
     },
-    reminder_account_number:{
+    sender_id: {
         type:Number,
         required: true
     },
-    reminded_account_number:{
+    receiver_id: {
         type:Number,
         required: true
-    },
-    message:{
-        type:String
-    },
-    debt:{
-        type:Number,
-        required: true
-    },
-    status:{
-        type:Number,
-        default: 1
     },
     created_date: {
         type: Date,
@@ -34,7 +23,7 @@ const RemindSchema = mongoose.Schema({
     updated_date: {
         type: Date,
         default: Date.now
-    },
+    }
 });
 
-module.exports = mongoose.model('Remind', RemindSchema);
+module.exports = mongoose.model('ExchangeMoney', ExchangeMoneySchema);
