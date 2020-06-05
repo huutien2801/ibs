@@ -16,10 +16,14 @@ const RatioSchema = mongoose.Schema({
         type: Float32Array,
         required: true
     },
+    created_date: {
+        type: Date,
+        default: Date.now
+    },
     updated_date: {
         type: Date,
         default: Date.now
-    }
+    },
 });
 
 module.exports = mongoose.model('Ratio', RatioSchema);
