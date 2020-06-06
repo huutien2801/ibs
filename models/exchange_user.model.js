@@ -8,12 +8,20 @@ const ExchangeMoneySchema = mongoose.Schema({
         type:Number,
         required: true
     },
-    sender_id: {
+    sender_account_number: {
         type:Number,
         required: true
     },
-    receiver_id: {
+    sender_full_name: {
+        type:String,
+        required: true
+    },
+    receiver_account_number: {
         type:Number,
+        required: true
+    },
+    receiver_full_name: {
+        type:String,
         required: true
     },
     created_date: {

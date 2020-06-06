@@ -1,7 +1,7 @@
-const User = require('../models/users.model');
+const User = require('../models/user.model');
 const Partner = require('../models/partner.model');
 const PartnerLog = require("../models/partner_logs.model")
-const BankAccount = require('../models/bank_account.model');
+const UserRole = require('../models/user_role.model');
 const jwt = require('jsonwebtoken');
 const ErrorCode = require('../config/ErrorCode');
 const md5 = require('md5');
@@ -71,7 +71,7 @@ const getInfoUser = async (req, res, next) => {
         });
     }
 
-    let user = await User.findOne({ user_id: account.user_id }, {
+    let user = await User.findOne({ user_id: account.user_id }, { 
         'full_name': 1
     });
 
@@ -93,7 +93,7 @@ const getInfoUser = async (req, res, next) => {
         });
     }
 
-    return res.status(400).json({
+    return res.status(400).json({ 
         message: "Can't get user"
     })
 }
@@ -264,7 +264,6 @@ const createUser = async (req, res, next) => {
         username,
         email,
         password,
-        role_id: 3,
     });
 
     if (user == null) {
@@ -275,9 +274,9 @@ const createUser = async (req, res, next) => {
 
     console.log(user);
 
-    await BankAccount.create({
+    await UserRole.create({
         user_id: user.user_id,
-        bankAccountType: 1,
+        role_id: 3,
         balance: 0,
     });
 

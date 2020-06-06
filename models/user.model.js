@@ -26,7 +26,7 @@ const UserSchema = mongoose.Schema({
         required: true
     },
     balance: {
-        type: double,
+        type: Number,
         default: 0
     },
     register_date: {
