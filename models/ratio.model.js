@@ -10,10 +10,11 @@ const RatioSchema = mongoose.Schema({
     },
     months: {
         type: Number,
-        required: true
+        required: true,
+        unique: true,
     },
     ratio: {
-        type: Float32Array,
+        type: Number,
         required: true
     },
     created_date: {
@@ -25,5 +26,7 @@ const RatioSchema = mongoose.Schema({
         default: Date.now
     },
 });
+
+RatioSchema.plugin(AutoIncrement, { inc_field: 'ratio_id' });
 
 module.exports = mongoose.model('Ratio', RatioSchema);

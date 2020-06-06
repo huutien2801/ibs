@@ -52,4 +52,6 @@ const ExchangeMoneySchema = mongoose.Schema({
     }
 });
 
+ExchangeMoneySchema.plugin(AutoIncrement, { inc_field: 'exchange_money_id' });
+
 module.exports = mongoose.model('ExchangeMoney', ExchangeMoneySchema);

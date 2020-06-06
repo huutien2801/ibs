@@ -23,6 +23,7 @@ const RemindSchema = mongoose.Schema({
         type:Number,
         required: true
     },
+    //DONE, UNDONE, CANCEL
     status:{
         type:Number,
         default: 1
@@ -36,5 +37,7 @@ const RemindSchema = mongoose.Schema({
         default: Date.now
     },
 });
+
+RemindSchema.plugin(AutoIncrement, { inc_field: 'remind_id' });
 
 module.exports = mongoose.model('Remind', RemindSchema);

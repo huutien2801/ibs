@@ -248,46 +248,10 @@ const rechargeMoneyInAccount = async (req, res, next) => {
     });
 }
 
-//API create user use bank
-//Create new user -> create new bank account of user
-const createUser = async (req, res, next) => {
 
-    const { username, password, email } = req.body;
-
-    if (username == "" || password == "") {
-        return res.status(400).json({
-            message: "username or passwork invalid"
-        })
-    }
-
-    let user = await User.create({
-        username,
-        email,
-        password,
-    });
-
-    if (user == null) {
-        return res.status(400).json({
-            message: "Can't create user"
-        })
-    }
-
-    console.log(user);
-
-    await UserRole.create({
-        user_id: user.user_id,
-        role_id: 3,
-        balance: 0,
-    });
-
-    res.status(200).json({
-        message: "Created"
-    })
-}
 
 module.exports = {
     getInfoUser,
     rechargeMoneyInAccount,
-    createUser,
 };
 

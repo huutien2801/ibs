@@ -3,7 +3,7 @@ require('dotenv').config({
     path: 'config/config.env'
 });
 
-const ExchangeMoneySchema = mongoose.Schema({
+const ExchangeUserSchema = mongoose.Schema({
     exchange_user_id:{
         type:Number,
         required: true
@@ -34,4 +34,6 @@ const ExchangeMoneySchema = mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('ExchangeMoney', ExchangeMoneySchema);
+ExchangeUserSchema.plugin(AutoIncrement, { inc_field: 'exchange_user_id' });
+
+module.exports = mongoose.model('ExchangeUser', ExchangeUserSchema);
