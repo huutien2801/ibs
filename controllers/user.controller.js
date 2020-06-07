@@ -1,4 +1,4 @@
-const User = require('../models/user.model');
+const User = require('../models/user_role.model');
 const Partner = require('../models/partner.model');
 const PartnerLog = require("../models/partner_logs.model")
 const UserRole = require('../models/user_role.model');
