@@ -24,5 +24,9 @@ function generatePIN(){
 
 module.exports = {
     generateAccountNumber,
-    generatePIN
+    generatePIN,
+    FEE_TRANSFER: 1100,
+    FEE_TRANSFER_BANK: 3300,
+    STANDARD_ACCOUNT: "STANDARD",
+    DEPOSIT_ACCOUNT: "DEPOSIT",
 };

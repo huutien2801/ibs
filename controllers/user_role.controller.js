@@ -64,8 +64,9 @@ const getInfoUser = async (req, res, next) => {
     })
 }
 
-//API create user use bank
+//API create user use bank POST
 //Create new user -> create new bank account of user
+//Truyền vào body username, password, email, fullName, nickName, phone, identityNumber, address, dob
 const createUser = async (req, res, next) => {
 
     const { username, password, email, fullName, nickName, phone, identityNumber, address, dob } = req.body;
