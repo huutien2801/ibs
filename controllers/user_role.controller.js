@@ -47,7 +47,7 @@ const changePassword = async(req, res, next) => {
     }
 };
 
-const getAllUsers = async (req, res, next) => {
+const getInfoUser = async (req, res, next) => {
     UserRole.find({ role_id: 2}, {username: 0, password: 0}, function(err, users) { // truyền role id
         if (users)
         {
@@ -64,7 +64,53 @@ const getAllUsers = async (req, res, next) => {
     })
 }
 
+//API create user use bank POST
+//Create new user -> create new bank account of user
+//Truyền vào body username, password, email, fullName, nickName, phone, identityNumber, address, dob
+const createUser = async (req, res, next) => {
+
+    const { username, password, email, fullName, nickName, phone, identityNumber, address, dob } = req.body;
+
+    if (username == "" || password == "" || fullName == "" || phone == "" || identityNumber == "" || address == "" || dob == null) {
+        return res.status(400).json({
+            message: "username or passwork invalid"
+        })
+    }
+
+    let data = {
+        username,
+        password,
+        full_name: fullName,
+        phone,
+        identity_number: identityNumber,
+        address,
+        dob,
+        role_id: 3
+    };
+
+    if (nickName != ""){
+        data["nick_name"] = nickName;
+    }
+
+    if (email != ""){
+        data["email"] = email;
+    }
+
+    let user = await UserRole.create(data);
+
+    if (user == null) {
+        return res.status(400).json({
+            message: "Can't create user"
+        })
+    }
+
+    res.status(200).json({
+        message: "Created"
+    })
+}
+
 module.exports = {
     changePassword,
-    getAllUsers,
+    getInfoUser,
+    createUser
 };

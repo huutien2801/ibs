@@ -15,16 +15,8 @@ const ExchangeMoneySchema = mongoose.Schema({
         type: Number,
         required: true
     },
-    sender_username: {
-        type: String,
-        required: true
-    },
     receiver_id: {
         type: Number,
-        required: true
-    },
-    receiver_username: {
-        type: String,
         required: true
     },
     money: {
@@ -35,11 +27,7 @@ const ExchangeMoneySchema = mongoose.Schema({
         type: String,
     },
     fee_type: {
-        type: Number,
-        required: true
-    },
-    fee: {
-        type: Number,
+        type: String,
         required: true
     },
     send_date: {
@@ -51,5 +39,7 @@ const ExchangeMoneySchema = mongoose.Schema({
         default: Date.now
     }
 });
+
+ExchangeMoneySchema.plugin(AutoIncrement, { inc_field: 'exchange_money_id' });
 
 module.exports = mongoose.model('ExchangeMoney', ExchangeMoneySchema);
