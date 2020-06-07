@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const ErrorCode = require('../config/ErrorCode');
-const User = require('../models/user.model');
+const User = require('../models/user_role.model');
 const { redisIAMClient } = require('../services/redis.service');
 
 // Protect routes
