@@ -99,9 +99,8 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
     }
 
     let resp = await BankAccountDB.update({user_id: senderId, type: STANDARD_ACCOUNT}, {balance: curAmountBef});
-    if (resp){
-        resp = await BankAccountDB.update({account_number: receiverId, type: STANDARD_ACCOUNT}, {balance: recAmountBef });
-        if(resp){
+    let respRec = await BankAccountDB.update({account_number: receiverId, type: STANDARD_ACCOUNT}, {balance: recAmountBef });
+    if (resp && respRec){
             //create log transfer money
             ExchangeMoneyDB.create({
                 sender_id: senderId,
@@ -115,7 +114,7 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
                 status: "OK",
                 message: "Transfer money successfully."
             })
-        }
+        
     }
 
     return json({
