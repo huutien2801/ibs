@@ -1,13 +1,12 @@
 const express = require('express');
 const { getMe } = require('../controllers/auth.controller');
-const {changePassword, createUser, getInfoUser} = require('../controllers/user_role.controller');
+const {addUserToList, showList} = require('../controllers/exchange_user.controller');
 
 const router = express.Router();
 
 const { protect } = require('../middlewares/auth.middleware');
 
-router.post('/change-password', changePassword);
-router.post('/create', createUser);
-router.get('/get-info', getInfoUser);
+router.post('/add-user', addUserToList);
+router.get('/show-user', showList);
 
 module.exports = router;

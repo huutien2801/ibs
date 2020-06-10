@@ -7,7 +7,6 @@ require('dotenv').config({
 const RemindSchema = mongoose.Schema({
     remind_id:{
         type:Number,
-        required: true
     },
     reminder_account_number:{
         type:Number,
@@ -26,8 +25,8 @@ const RemindSchema = mongoose.Schema({
     },
     //DONE, UNDONE, CANCEL
     status:{
-        type:Number,
-        default: 1
+        type:String,
+        default: "UNDONE"
     },
     created_date: {
         type: Date,

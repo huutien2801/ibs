@@ -12,7 +12,8 @@ require('dotenv').config({
 //Truyền vô body reminded, mess, debt
 const createRemind = async(req, res, next) => {
     const { reminded, mess, debt } = req.body
-    let currentAccount = await BankAccountDB.findOne({user_id: req.user.user_id, type: STANDARD_ACCOUNT})
+    //let currentAccount = await BankAccountDB.findOne({user_id: req.user.user_id, type: STANDARD_ACCOUNT}) // Note lại để test
+    let currentAccount = await BankAccountDB.findOne({user_id: 1, type: STANDARD_ACCOUNT})
 
     if(currentAccount == null){
         return res.status(400).json({
@@ -40,7 +41,8 @@ const createRemind = async(req, res, next) => {
 
 //Lấy danh sách nhắc nợ do bản thân tạo GET
 const getReminder = async(req, res, next) => {   
-    let currentAccount = await BankAccountDB.findOne({user_id: req.user.user_id});
+    //let currentAccount = await BankAccountDB.findOne({user_id: req.user.user_id}); // Note lại để test
+    let currentAccount = await BankAccountDB.findOne({user_id: 1});
     if(currentAccount == null){
         return res.status(400).json({
             message: "Can't get current account"
@@ -48,7 +50,7 @@ const getReminder = async(req, res, next) => {
     }
 
     let resp = await RemindDB.find({
-        reminder_account_number: currentAccount.data.account_number,
+        reminder_account_number: currentAccount.account_number,
         status: "UNDONE"
     })
 
@@ -66,7 +68,8 @@ const getReminder = async(req, res, next) => {
 
 //Lấy danh sách bị người khác nhắc GET
 const getReminded = async(req, res, next) => {
-    let currentAccount = await BankAccountDB.findOne({user_id: req.user.user_id});
+    //let currentAccount = await BankAccountDB.findOne({user_id: req.user.user_id}); // Note lại để test
+    let currentAccount = await BankAccountDB.findOne({user_id: 2});
     if(currentAccount == null){
         return res.status(400).json({
             message: "Can't get current account"
@@ -74,7 +77,7 @@ const getReminded = async(req, res, next) => {
     }
 
     let resp = await RemindDB.find({
-        reminded_account_number: currentAccount.data.account_number,
+        reminded_account_number: currentAccount.account_number,
         status: "UNDONE"
     })
 
@@ -113,7 +116,8 @@ const cancelRemind = async(req, res, next) => {
 const payRemind = async(req,res,next) =>{
     const {remindId, reminderAccountNumber, debt, message} = req.body;
 
-    let curUser = await BankAccountDB.findOne({user_id: req.user.user_id, type: STANDARD_ACCOUNT});
+    //let curUser = await BankAccountDB.findOne({user_id: req.user.user_id, type: STANDARD_ACCOUNT}); // Note lại để test
+    let curUser = await BankAccountDB.findOne({user_id: 2, type: STANDARD_ACCOUNT});
     let recUser = await BankAccountDB.findOne({account_number: reminderAccountNumber, type: STANDARD_ACCOUNT});
 
     let resp = await handleTransfer(curUser.user_id, recUser.user_id, debt, message, "PAY", curUser.balance, recUser.balance);

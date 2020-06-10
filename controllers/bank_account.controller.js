@@ -13,7 +13,8 @@ const createBankAccount = async(req, res, next) => {
     const {type, balance, ratioMonth, deposit} = req.body
 
     let data = {
-        user_id: req.user.user_id,
+        //user_id: req.user.user_id, // Note lại để test
+        user_id: 1,
         account_number: generateAccountNumber(),
         type,
     }
@@ -21,7 +22,7 @@ const createBankAccount = async(req, res, next) => {
     var currentTime = new Date();
     if (type == STANDARD_ACCOUNT){
         data["pin"] = generatePIN();
-        data["expired_date"] = currentTime.setFullYear(expired_date.getFullYear() + 4);
+        data["expired_date"] = currentTime.setFullYear(currentTime.getFullYear() + 4);
     } else {
         data["deposit"] = deposit;
         data["deposit_date"] = currentTime;
@@ -41,9 +42,10 @@ const createBankAccount = async(req, res, next) => {
     }
 
     let resp = await BankAccountDB.create({
-        bank_account_type,
+        type,
         balance,
-        user_id
+        user_id: data.user_id,
+        account_number: data.account_number
     });
     if(resp){
         return res.status(200).json({
@@ -61,7 +63,8 @@ const createBankAccount = async(req, res, next) => {
 const transferMoney = async (req, res, next) => {
     const {receiveAccount, amount, mess, type} = req.body;
 
-    let curUser = await BankAccountDB.findOne({user_id: req.user.user_id, type:STANDARD_ACCOUNT});
+    //let curUser = await BankAccountDB.findOne({user_id: req.user.user_id, type:STANDARD_ACCOUNT}); // Note lại để test
+    let curUser = await BankAccountDB.findOne({user_id: 1, type:STANDARD_ACCOUNT});
     if (curUser == null) {
         return res.status(400).json({
             message: "Can't find user."
@@ -74,7 +77,7 @@ const transferMoney = async (req, res, next) => {
         })
     }
 
-    let handle = await handle(curUser.user_id, recUser.user_id, amount, mess, type, curUser.balance, recUser.balance);
+    let handle = await handleTransfer(curUser.user_id, recUser.user_id, amount, mess, type, curUser.balance, recUser.balance);
     if(handle.status == "OK"){
         return res.status(200).json({
             message: handle.message
@@ -110,14 +113,14 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
                 fee_type: feeType
             })
 
-            return json({
+            return ({
                 status: "OK",
                 message: "Transfer money successfully."
             })
         
     }
 
-    return json({
+    return ({
         status: "ERROR",
         message: "Can't transfer money at this time."
     });

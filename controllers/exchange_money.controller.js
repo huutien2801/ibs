@@ -15,7 +15,7 @@ const getAllById = async(req, res, next) => {
 
     if(respSender && respRec){
         data["sender"] = respSender;
-        data["receive"] = respSender;
+        data["receive"] = respRec;
         return res.status(200).json({
             message:"Get all history sender successfully",
             data: data

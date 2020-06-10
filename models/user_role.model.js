@@ -10,7 +10,6 @@ require('dotenv').config({
 const UserRoleSchema = mongoose.Schema({
     user_id: {
         type: Number,
-        required: true
     },
     role_id: {
         type: Number,
@@ -23,6 +22,7 @@ const UserRoleSchema = mongoose.Schema({
     },
     password: {
         type: String,
+        maxlength: 255,
         required: true
     },
     full_name:{

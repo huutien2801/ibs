@@ -8,7 +8,7 @@ const { protect } = require('../middlewares/auth.middleware');
 
 router.post('/create', createRemind);
 router.get('/reminder', getReminder);
-router.get('reminded', getReminded);
+router.get('/reminded', getReminded);
 router.put('/cancel', cancelRemind);
 router.post('/pay', payRemind);
 

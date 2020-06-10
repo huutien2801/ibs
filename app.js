@@ -90,8 +90,6 @@ app.use('/api/v1/bank-account', require('./routers/bank_account.router'));
 app.use('/api/v1/exchange-user', require('./routers/exchange_user.router'));
 app.use('/api/v1/debt', require('./routers/debt.router'));
 
-
-
 app.use('*', (req, res) => {
   res.status(200).send({
     message: 'Welcome to Internet Banking Service',
