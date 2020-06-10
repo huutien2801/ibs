@@ -7,7 +7,6 @@ require('dotenv').config({
 const ExchangeMoneySchema = mongoose.Schema({
     exchange_money_id:{
         type:Number,
-        required: true
     },
     partner_code: {
         type: String,

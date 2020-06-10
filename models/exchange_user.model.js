@@ -7,7 +7,6 @@ require('dotenv').config({
 const ExchangeUserSchema = mongoose.Schema({
     exchange_user_id:{
         type:Number,
-        required: true
     },
     sender_account_number: {
         type:Number,
