@@ -98,8 +98,8 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
         recAmountBef = recBalance + amount - FEE_TRANSFER;
     }
 
-    let resp = await BankAccountDB.update({user_id: senderId, type: STANDARD_ACCOUNT}, {balance: curAmountBef});
-    let respRec = await BankAccountDB.update({account_number: receiverId, type: STANDARD_ACCOUNT}, {balance: recAmountBef });
+    let resp = await BankAccountDB.updateOne({user_id: senderId, type: STANDARD_ACCOUNT}, {balance: curAmountBef});
+    let respRec = await BankAccountDB.updateOne({user_id: receiverId, type: STANDARD_ACCOUNT}, {balance: recAmountBef });
     if (resp && respRec){
             //create log transfer money
             ExchangeMoneyDB.create({

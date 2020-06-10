@@ -85,7 +85,12 @@ app.use('/api/v1/user', require('./routers/user.router'));
 app.use('/api/v1/partner', require('./routers/partner.router'));
 //app.use('/api/v1/bank-account', require('./routers/bank_account.router'));
 app.use('/api/v1/remind', require('./routers/debt.router'));
+app.use('/api/v1/user-role', require('./routers/user_role.router'));
+app.use('/api/v1/bank-account', require('./routers/bank_account.router'));
+app.use('/api/v1/exchange-user', require('./routers/exchange_user.router'));
+app.use('/api/v1/debt', require('./routers/debt.router'));
 app.use('/api/v1/otp', require('./routers/otp.router'));
+
 
 
 app.use('*', (req, res) => {
