@@ -163,9 +163,55 @@ const getUserLogs = async (req, res, next) => {
         }
     }
 }
+//Xem danh sách giao dịch trong tháng với các ngân hàng khác (đối soát)
+//API get history for admin
+//filter by partnerCode, time
+//get total money exchange in time
+//GET param q={"partnerCode":...},start:time,end:time,limit,offset,getTotal=true
+const getAllHistoryAdmin = async (req, res, next) => {
+  let q = req.query.q;
+  let startDate = req.query.start;
+  let endDate = req.query.end;
+  let limit = req.query.limit;
+  let offset = req.query.offset;
+  let getTotal = req.query.total;
+
+  let data = {};
+  if (startDate && endDate) {
+    data = {
+      $where: function () {
+        return this.updated_date > startDate && this.updated_date < endDate;
+      },
+    };
+  }
+
+  if (getTotal) {
+    data.partner_code = { $type: "string" };
+  } else {
+    data.partner_code = q.partnerCode;
+  }
+
+  data.total = { $sum: "$money" };
+
+  let resp = await ExchangeMoneyDB.find(data)
+    .limit(limit ? limit : 20)
+    .offset(offset ? offset : 0);
+
+  if (resp) {
+    return res.status(200).json({
+      message: "Query history successful",
+      data: resp,
+    });
+  }
+
+  return res.status(400).json({
+    message: "Can't get history at this time.",
+  });
+};
 
 module.exports = {
     getAllById,
     depositMoney,
-    getUserLogs
+    getUserLogs,
+    getAllHistoryAdmin
 };
