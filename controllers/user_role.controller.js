@@ -8,8 +8,7 @@ require('dotenv').config({
 
 const changePassword = async(req, res, next) => {
     const { oldPassword, newPassword, confirmPassword } = req.body
-    // var user = UserRole.findOne({ username: req.user.username }) // Note lại để test
-    var user = await UserRole.findOne({ username: "lathoai006" }); 
+    var user = UserRole.findOne({ username: req.user.username })
     console.log(user);
     var salt = await bcrypt.genSalt(10);
     bcrypt.compare(oldPassword, user.toObject().password, function(err, result) {
@@ -47,7 +46,8 @@ const changePassword = async(req, res, next) => {
 };
 
 const getInfoUser = async (req, res, next) => {
-    UserRole.find({ role_id: 5}, {username: 0, password: 0}, function(err, users) { // truyền role id để test
+    let roleId = req.query.role_id;
+    UserRole.find({ roleId }, {username: 0, password: 0}, function(err, users) {
         if (users.length)
         {
             return res.status(200).json({

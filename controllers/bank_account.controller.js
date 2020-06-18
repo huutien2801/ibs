@@ -13,8 +13,7 @@ const createBankAccount = async(req, res, next) => {
     const {type, balance, ratioMonth, deposit} = req.body
 
     let data = {
-        //user_id: req.user.user_id, // Note lại để test
-        user_id: 1,
+        user_id: req.user.user_id,
         account_number: generateAccountNumber(),
         type,
     }
@@ -63,8 +62,7 @@ const createBankAccount = async(req, res, next) => {
 const transferMoney = async (req, res, next) => {
     const {receiveAccount, amount, mess, type} = req.body;
 
-    //let curUser = await BankAccountDB.findOne({user_id: req.user.user_id, type:STANDARD_ACCOUNT}); // Note lại để test
-    let curUser = await BankAccountDB.findOne({user_id: 1, type:STANDARD_ACCOUNT});
+    let curUser = await BankAccountDB.findOne({user_id: req.user.user_id, type:STANDARD_ACCOUNT}); // Note lại để test
     if (curUser == null) {
         return res.status(400).json({
             message: "Can't find user."
