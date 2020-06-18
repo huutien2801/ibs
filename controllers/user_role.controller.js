@@ -107,8 +107,36 @@ const createUser = async (req, res, next) => {
     })
 }
 
+const resetPassword = async(req,res,next) => {
+    const { newPassword, confirmPassword } = req.body
+    if (newPassword != confirmPassword)
+    {
+        return res.status(400).json({
+            message: "Your new password is not match"
+        })
+    }
+    else
+    {
+        bcrypt.hash(newPassword, salt, async (err, hash) => {
+            let update = {'password': hash};
+            let resp = await UserRole.update({user_id:req.user.user_id}, update);
+            if (resp) {
+                return res.status(200).json({
+                    message: "Your password has been updated",
+                })
+            }
+            else {
+                return res.status(400).json({
+                    message: "Can't update your password"
+                })
+            }
+        })
+    }
+}
+
 module.exports = {
     changePassword, 
     getInfoUser, 
-    createUser 
+    createUser,
+    resetPassword
 };

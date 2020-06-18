@@ -57,12 +57,16 @@ function sendOTPMail(email, fullname, otpCode) {
 }
 
 module.exports = {
-  generateAccountNumber,
-  generatePIN,
-  generateOTP,
-  sendOTPMail,
-  FEE_TRANSFER: 1100,
-  FEE_TRANSFER_BANK: 3300,
-  STANDARD_ACCOUNT: "STANDARD",
-  DEPOSIT_ACCOUNT: "DEPOSIT",
+    generateAccountNumber,
+    generatePIN,
+    generateOTP,
+    sendOTPMail,
+    FEE_TRANSFER: 1100,
+    FEE_TRANSFER_BANK: 3300,
+    STANDARD_ACCOUNT: "STANDARD",
+    DEPOSIT_ACCOUNT: "DEPOSIT",
+    EXCHANGE_TYPE_ALL: "ALL",
+    EXCHANGE_TYPE_SEND: "SEND",
+    EXCHANGE_TYPE_RECEIVE: "RECEIVE",
+    EXCHANGE_TYPE_DEBT: "DEBT"
 };

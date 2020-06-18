@@ -1,4 +1,5 @@
 const User = require('../models/user_role.model');
+const BankAccount = require('../models/bank_account.model');
 const Partner = require('../models/partner.model');
 const PartnerLog = require("../models/partner_logs.model")
 const UserRole = require('../models/user_role.model');
@@ -62,7 +63,7 @@ const getInfoUser = async (req, res, next) => {
 
     //Call to DB to get info username
     let  accountId  = req.query.accountId
-    let account = await BankAccount.findOne({ bank_account_id: accountId })
+    let account = await BankAccount.findOne({ user_id: accountId })
 
     if (!account) {
         return res.status(404).json({
@@ -71,9 +72,7 @@ const getInfoUser = async (req, res, next) => {
         });
     }
 
-    let user = await User.findOne({ user_id: account.user_id }, { 
-        'full_name': 1
-    });
+    let user = await User.findOne({ user_id: account.user_id }).select({ 'password': 0});
 
     if (user) {
 
@@ -209,7 +208,7 @@ const rechargeMoneyInAccount = async (req, res, next) => {
             });
         }
 
-        let account = await BankAccount.findOne({ bank_account_id: body.accountId })
+        let account = await BankAccount.findOne({ user_id: body.accountId })
         if (!account) {
             return res.status(404).json({
                 message: "Your account is incorrect",
@@ -218,7 +217,7 @@ const rechargeMoneyInAccount = async (req, res, next) => {
         }
 
         let newBalance = account.balance + body.cost
-        const filter = { bank_account_id: body.accountId };
+        const filter = { user_id: body.accountId };
         const update = { balance: newBalance };
         let resp = await BankAccount.findOneAndUpdate(filter, update);
         if (resp) {
