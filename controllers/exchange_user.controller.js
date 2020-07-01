@@ -10,13 +10,10 @@ require('dotenv').config({
 const addUserToList = async(req, res, next) => {
     const { receiverAccountNumber } = req.body
     let resp = await ExchangeUser.create({
-        //sender_account_number: UserRole.findOne({ user_id: req.user.id }).select('account_number'), // Note lại để test
-        //sender_full_name: User.findById({ user_id: req.user.id }).select('full_name'), // Note lại để test
-        sender_account_number: "123124",
-        sender_full_name: "La Thoai",
+        sender_account_number: UserRole.findOne({ user_id: req.user.user_id }).select('account_number'), 
+        sender_full_name: User.findById({ user_id: req.user.user_id }).select('full_name'), 
         receiver_account_number: receiverAccountNumber,
-        //receiver_full_name: User.findOne({ account_number: receiverAccountNumber }).full_name // Note lại để test
-        receiver_full_name: "Thoai La"
+        receiver_full_name: User.findOne({ account_number: receiverAccountNumber }).full_name 
     })
     if (resp) {
         return res.status(200).json({
@@ -32,8 +29,21 @@ const addUserToList = async(req, res, next) => {
 };
 
 const showList = async(req, res, next) => {
-    //let resp = ExchangeUser.find({ sender_id: req.user.id }) // Note lại để test
-    ExchangeUser.find({sender_account_number: 123124}, function(err, users) {
+    let curUser = User.find({ user_id: req.user.user_id });
+    let startDate = req.query.start;
+    let endDate = req.query.end;
+    let limit = req.query.limit;
+    let offset = req.query.offset;
+
+    let data = {};
+    if (startDate && endDate) {
+        data = {
+        $where: function () {
+            return this.updated_date > startDate && this.updated_date < endDate;
+            },
+        };
+    }
+    ExchangeUser.find({sender_account_number: curUser.account_number, data}, function(err, users) {
         if (users.length) {
             return res.status(200).json({
                 users
@@ -44,7 +54,8 @@ const showList = async(req, res, next) => {
                 message: "Empty list"
             })
         }
-    })   
+    }).limit(limit ? limit : 20)
+      .offset(offset ? offset : 0);
 };
 
 
