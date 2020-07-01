@@ -6,7 +6,8 @@ require('dotenv').config({
 const otpSchema = mongoose.Schema(
 	{
 		email: { type: String },
-		otp: { type: Number }
+		otp: { type: Number },
+		createdAt: { type: Date, expires: 18000 }
 	},
 	{
 		timestamps: true
