@@ -1,4 +1,5 @@
 const UserRole = require('../models/user_role.model');
+const Partner = require('../models/partner.model');
 const bcrypt = require('bcrypt');
 
 
@@ -47,6 +48,8 @@ const changePassword = async(req, res, next) => {
 
 const getInfoUser = async (req, res, next) => {
     let roleCode = req.query.roleCode;
+    let limit = req.query.limit;
+    let offset = req.query.offset;
     UserRole.find({ role_code: roleCode }, {username: 0, password: 0}, function(err, users) {
         console.log(users)
         if (users.length)
@@ -60,7 +63,8 @@ const getInfoUser = async (req, res, next) => {
                 message: "Empty list"
             })
         }
-    })
+    }).limit(limit ? limit : 20)
+    .offset(offset ? offset : 0);
 }
 
 //API create user use bank POST
@@ -69,6 +73,7 @@ const getInfoUser = async (req, res, next) => {
 const createUser = async (req, res, next) => {
 
     const { username, password, email, fullName, nickName, phone, identityNumber, address, dob, role_code } = req.body;
+    
 
     if (username == "" || password == "" || fullName == "" || phone == "" || identityNumber == "" || address == "" || dob == null) {
         return res.status(400).json({
@@ -135,9 +140,29 @@ const resetPassword = async(req,res,next) => {
     }
 }
 
+const getPartnerInfo = async(req, res, next) => {
+    let limit = req.query.limit;
+    let offset = req.query.offset;
+    Partner.find({}, {partner_public_key: 0, partner_secret_key: 0}, function(err, partners){
+        if (partners.length)
+        {
+            return res.status(200).json({
+                partners
+            })
+        }
+        else {
+            return res.status(400).json({
+                message: "Empty list"
+            })
+        }
+    }).limit(limit ? limit : 20)
+    .offset(offset ? offset : 0);
+}
+
 module.exports = {
     changePassword, 
     getInfoUser, 
     createUser,
-    resetPassword
+    resetPassword,
+    getPartnerInfo
 };
