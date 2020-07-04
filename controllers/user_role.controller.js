@@ -46,8 +46,8 @@ const changePassword = async(req, res, next) => {
 };
 
 const getInfoUser = async (req, res, next) => {
-    let roleId = req.query.role_id;
-    UserRole.find({ roleId }, {username: 0, password: 0}, function(err, users) {
+    let roleCode = req.query.role_code;
+    UserRole.find({ roleCode }, {username: 0, password: 0}, function(err, users) {
         if (users.length)
         {
             return res.status(200).json({
@@ -83,7 +83,7 @@ const createUser = async (req, res, next) => {
         identity_number: identityNumber,
         address,
         dob,
-        role_id: 3
+        role_code: "CUSTOMER"
     };
 
     if (nickName != ""){
