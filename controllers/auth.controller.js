@@ -1,4 +1,4 @@
-const User = require('../models/users.model');
+const User = require('../models/user_role.model');
 const jwt = require('jsonwebtoken');
 const ErrorCode = require('../config/ErrorCode');
 
@@ -35,24 +35,43 @@ const sendTokenResponse = async (user, res) => {
 // @route     POST /api/v1/auth/employee/register
 // @access    Public
 const registerEmployee = async (req, res, next) => {
-    const { username, email, password } = req.body;
+    const { username, password, email, fullName, nickName, phone, identityNumber, address, dob } = req.body;
     // if (!validateRegisterInput(req.body)) {
     //     return next(ErrorCode.INVALID_PARAMETER);
     // }
-
-    const checkUser = await User.findOne({
-        email,
-    });
-    if (checkUser) {
-        return next(ErrorCode.EXISTS_INPUT_INFO);
+    if (username == "" || password == "" || fullName == "" || phone == "" || identityNumber == "" || address == "" || dob == null) {
+        return res.status(400).json({
+            message: "username or passwork invalid"
+        })
     }
 
-    const user = await User.create({
-        username,
-        email,
-        password,
-        role_id: 3,
+    const checkUser = await User.findOne({
+      username
     });
+    if (checkUser) {
+      return next(ErrorCode.EXISTS_INPUT_INFO);
+    }
+
+    let data = {
+        username,
+        password,
+        full_name: fullName,
+        phone,
+        identity_number: identityNumber,
+        address,
+        dob,
+        roleId: 2
+    };
+
+    if (nickName != ""){
+        data["nick_name"] = nickName;
+    }
+
+    if (email != ""){
+        data["email"] = email;
+    }
+
+    const user = await User.create(data);
     res.status(201).send({
         employee_created: user,
     });
@@ -62,12 +81,12 @@ const registerEmployee = async (req, res, next) => {
 // @route     POST /api/v1/auth/login
 // @access    Public
 const login = async (req, res, next) => {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
     // if (!validateLoginInput(req.body)) {
     //   return next(ErrorCode.WRONG_PARAMETER);
     // }
     // Check for user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ username });
   
     if (!user) {
       return next(ErrorCode.REQUEST_TIMEOUT);
@@ -79,7 +98,7 @@ const login = async (req, res, next) => {
       return next(ErrorCode.REQUEST_TIMEOUT);
     }
     sendTokenResponse(user, res);
-  };
+};
   
   // @desc      Log user out / clear cookie
   // @route     GET /api/v1/auth/logout
@@ -119,7 +138,6 @@ const login = async (req, res, next) => {
       {
         id: user.user_id,
         username: user.username,
-        email: user.email,
       },
       process.env.JWT_SECRET,
       {

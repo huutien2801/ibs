@@ -7,43 +7,64 @@ require('dotenv').config({
     path: 'config/config.env'
 });
 
-const UserSchema = mongoose.Schema({
+const UserRoleSchema = mongoose.Schema({
     user_id: {
         type: Number,
     },
+    role_id: {
+        type: Number,
+        required: true
+    },
     username: {
         type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        maxlength: 255,
         required: true
     },
     full_name:{
         type: String,
         required: true
     },
+    nick_name: {
+        type: String,
+    },
     email: {
         type: String,
         unique: true
     },
-    password: {
+    phone: {
         type: String,
-    },
-    role_id: {
-        type: Number,
         required: true
     },
-    created_at: {
+    identity_number: {
+        type: String,
+        required: true
+    },
+    address: {
+        type: String,
+        required: true
+    },
+    dob: {
+        type: Date,
+        required: true
+    },
+    created_date: {
         type: Date,
         default: Date.now
     },
-    updated_at: {
+    updated_date: {
         type: Date,
         default: Date.now
     },
 });
 
-UserSchema.plugin(AutoIncrement, { inc_field: 'user_id' });
+UserRoleSchema.plugin(AutoIncrement, { inc_field: 'user_id' });
 
-// Encrypt password using bcrypt
-UserSchema.pre('save', async function (next) {
+UserRoleSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         next();
     }
@@ -53,7 +74,7 @@ UserSchema.pre('save', async function (next) {
 });
 
 // Sign JWT and return
-UserSchema.methods.getSignedJwtToken = function () {
+UserRoleSchema.methods.getSignedJwtToken = function () {
     return jwt.sign({
         id: this.user_id,
         username: this.username,
@@ -63,7 +84,7 @@ UserSchema.methods.getSignedJwtToken = function () {
     });
 };
 
-UserSchema.methods.getRefreshToken = function () {
+UserRoleSchema.methods.getRefreshToken = function () {
     return jwt.sign({
         id: this.user_id,
         username: this.username,
@@ -73,8 +94,8 @@ UserSchema.methods.getRefreshToken = function () {
     });
 };
 
-UserSchema.methods.matchPassword = async function (enteredPassword) {
+UserRoleSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('UserRole', UserRoleSchema);

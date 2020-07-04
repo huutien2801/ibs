@@ -1,30 +1,57 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 require('dotenv').config({
     path: 'config/config.env'
 });
 
 const BankAccountSchema = mongoose.Schema({
-    bank_account_type:{
-        type:Number,
-        require: true
-    },
-    bank_account_id:{
+    user_id: {
         type: Number,
-        require: true
+        required: true
     },
-    balance:{
-        type:Number,
-        require: true
+    //STANDARD, DEPOSIT
+    type: {
+        type: String,
+        required: true
     },
-    user_id:{
-        type:Number,
-        require: true
+    account_number: {
+        type: String,
+        required: true,
+        unique: true
     },
-    created_at: {
+    pin: {
+        type: Number
+    },
+    balance: {
+        type: Number,
+        default: 0
+    },
+    register_date: {
         type: Date,
         default: Date.now
     },
-    updated_at: {
+    expired_date: {
+        type: Date
+    },
+    ratio_id: {
+        type: Number
+    },
+    deposit: {
+        type: Number
+    },
+    deposit_date: {
+        type: Date,
+    },
+    redeem: {
+        type: Number
+    },
+    redeem_date: {
+        type: Date,
+    },
+    updated_date: {
         type: Date,
         default: Date.now
     },

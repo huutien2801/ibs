@@ -1,7 +1,8 @@
-const User = require('../models/users.model');
+const User = require('../models/user_role.model');
+const BankAccount = require('../models/bank_account.model');
 const Partner = require('../models/partner.model');
 const PartnerLog = require("../models/partner_logs.model")
-const BankAccount = require('../models/bank_account.model');
+const UserRole = require('../models/user_role.model');
 const jwt = require('jsonwebtoken');
 const ErrorCode = require('../config/ErrorCode');
 const md5 = require('md5');
@@ -62,7 +63,7 @@ const getInfoUser = async (req, res, next) => {
 
     //Call to DB to get info username
     let  accountId  = req.query.accountId
-    let account = await BankAccount.findOne({ bank_account_id: accountId })
+    let account = await BankAccount.findOne({ user_id: accountId })
 
     if (!account) {
         return res.status(404).json({
@@ -71,9 +72,7 @@ const getInfoUser = async (req, res, next) => {
         });
     }
 
-    let user = await User.findOne({ user_id: account.user_id }, {
-        'full_name': 1
-    });
+    let user = await User.findOne({ user_id: account.user_id }).select({ 'password': 0});
 
     if (user) {
 
@@ -93,7 +92,7 @@ const getInfoUser = async (req, res, next) => {
         });
     }
 
-    return res.status(400).json({
+    return res.status(400).json({ 
         message: "Can't get user"
     })
 }
@@ -209,7 +208,7 @@ const rechargeMoneyInAccount = async (req, res, next) => {
             });
         }
 
-        let account = await BankAccount.findOne({ bank_account_id: body.accountId })
+        let account = await BankAccount.findOne({ user_id: body.accountId })
         if (!account) {
             return res.status(404).json({
                 message: "Your account is incorrect",
@@ -218,7 +217,7 @@ const rechargeMoneyInAccount = async (req, res, next) => {
         }
 
         let newBalance = account.balance + body.cost
-        const filter = { bank_account_id: body.accountId };
+        const filter = { user_id: body.accountId };
         const update = { balance: newBalance };
         let resp = await BankAccount.findOneAndUpdate(filter, update);
         if (resp) {
@@ -248,47 +247,10 @@ const rechargeMoneyInAccount = async (req, res, next) => {
     });
 }
 
-//API create user use bank
-//Create new user -> create new bank account of user
-const createUser = async (req, res, next) => {
 
-    const { username, password, email } = req.body;
-
-    if (username == "" || password == "") {
-        return res.status(400).json({
-            message: "username or passwork invalid"
-        })
-    }
-
-    let user = await User.create({
-        username,
-        email,
-        password,
-        role_id: 3,
-    });
-
-    if (user == null) {
-        return res.status(400).json({
-            message: "Can't create user"
-        })
-    }
-
-    console.log(user);
-
-    await BankAccount.create({
-        user_id: user.user_id,
-        bankAccountType: 1,
-        balance: 0,
-    });
-
-    res.status(200).json({
-        message: "Created"
-    })
-}
 
 module.exports = {
     getInfoUser,
     rechargeMoneyInAccount,
-    createUser,
 };
 
