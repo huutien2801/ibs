@@ -46,8 +46,8 @@ const changePassword = async(req, res, next) => {
 };
 
 const getInfoUser = async (req, res, next) => {
-    let roleId = req.query.role_id;
-    UserRole.find({ roleId }, {username: 0, password: 0}, function(err, users) {
+    let roleCode = req.query.role_code;
+    UserRole.find({ roleCode }, {username: 0, password: 0}, function(err, users) {
         if (users.length)
         {
             return res.status(200).json({
@@ -67,7 +67,7 @@ const getInfoUser = async (req, res, next) => {
 //Truyền vào body username, password, email, fullName, nickName, phone, identityNumber, address, dob
 const createUser = async (req, res, next) => {
 
-    const { username, password, email, fullName, nickName, phone, identityNumber, address, dob } = req.body;
+    const { username, password, email, fullName, nickName, phone, identityNumber, address, dob, role_code } = req.body;
 
     if (username == "" || password == "" || fullName == "" || phone == "" || identityNumber == "" || address == "" || dob == null) {
         return res.status(400).json({
@@ -83,7 +83,7 @@ const createUser = async (req, res, next) => {
         identity_number: identityNumber,
         address,
         dob,
-        role_id: 3
+        role_code
     };
 
     if (nickName != ""){
