@@ -46,8 +46,9 @@ const changePassword = async(req, res, next) => {
 };
 
 const getInfoUser = async (req, res, next) => {
-    let roleCode = req.query.role_code;
-    UserRole.find({ roleCode }, {username: 0, password: 0}, function(err, users) {
+    let roleCode = req.query.roleCode;
+    UserRole.find({ role_code: roleCode }, {username: 0, password: 0}, function(err, users) {
+        console.log(users)
         if (users.length)
         {
             return res.status(200).json({
