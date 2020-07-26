@@ -32,8 +32,8 @@ const showList = async(req, res, next) => {
     let curUser = User.find({ user_id: req.user.user_id });
     let startDate = req.query.start;
     let endDate = req.query.end;
-    let limit = req.query.limit;
-    let offset = req.query.offset;
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.skip);
 
     let data = {};
     if (startDate && endDate) {
@@ -55,7 +55,7 @@ const showList = async(req, res, next) => {
             })
         }
     }).limit(limit ? limit : 20)
-      .offset(offset ? offset : 0);
+      .skip(skip ? skip : 0);
 };
 
 

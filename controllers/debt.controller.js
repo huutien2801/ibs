@@ -42,8 +42,8 @@ const createRemind = async(req, res, next) => {
 const getReminder = async(req, res, next) => {   
     let startDate = req.query.start;
     let endDate = req.query.end;
-    let limit = req.query.limit;
-    let offset = req.query.offset;
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.skip);
 
   let data = {};
   if (startDate && endDate) {
@@ -65,7 +65,7 @@ const getReminder = async(req, res, next) => {
         reminder_account_number: currentAccount.account_number,
         status: "UNDONE"
     }).limit(limit ? limit : 20)
-    .offset(offset ? offset : 0);
+    .skip(skip ? skip : 0);
 
     if (resp) {
         return res.status(200).json({
@@ -83,8 +83,8 @@ const getReminder = async(req, res, next) => {
 const getReminded = async(req, res, next) => {
     let startDate = req.query.start;
     let endDate = req.query.end;
-    let limit = req.query.limit;
-    let offset = req.query.offset;
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.skip);
 
   let data = {};
   if (startDate && endDate) {
@@ -106,7 +106,7 @@ const getReminded = async(req, res, next) => {
         reminded_account_number: currentAccount.account_number,
         status: "UNDONE"
     }).limit(limit ? limit : 20)
-    .offset(offset ? offset : 0);
+    .skip(skip ? skip : 0);
 
     if (resp) {
         return res.status(200).json({

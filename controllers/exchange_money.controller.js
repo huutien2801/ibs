@@ -14,8 +14,8 @@ const getAllById = async(req, res, next) => {
     let q = req.query.q;
     let startDate = req.query.start;
     let endDate = req.query.end;
-    let limit = req.query.limit;
-    let offset = req.query.offset;
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.skip);
 
   let data = {};
   if (startDate && endDate) {
@@ -27,9 +27,9 @@ const getAllById = async(req, res, next) => {
   }
 
     let respSender = await ExchangeMoneyDB.find({sender_id: q.userId, data}).limit(limit ? limit : 20)
-                                                                      .offset(offset ? offset : 0);
+                                                                      .skip(skip ? skip : 0);
     let respRec = await ExchangeMoneyDB.find({receiver_id: q.userId, data}).limit(limit ? limit : 20)
-                                                                     .offset(offset ? offset : 0);
+                                                                     .skip(skip ? skip : 0);
 
     if(respSender && respRec){
         data["sender"] = respSender;
@@ -111,8 +111,8 @@ const getUserLogs = async (req, res, next) => {
     const type = EXCHANGE_TYPE_DEBT;
     let startDate = req.query.start;
     let endDate = req.query.end;
-    let limit = req.query.limit;
-    let offset = req.query.offset;
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.skip);
 
   let data = {};
   if (startDate && endDate) {
@@ -127,9 +127,9 @@ const getUserLogs = async (req, res, next) => {
     if (type == EXCHANGE_TYPE_ALL)
     {
         let resp1 = await ExchangeMoney.find({ $or: [ {'sender_id': user.user_id}, {'receiver_id': user.user_id} ], data}).limit(limit ? limit : 20)
-        .offset(offset ? offset : 0);
+        .skip(skip ? skip : 0);
         let resp2 = await Remind.find({ data, status: "DONE", $or:[ {'reminder_account_number': accountNumber}, {'reminded_account_number': accountNumber} ]}).limit(limit ? limit : 20)
-        .offset(offset ? offset : 0);
+        .skip(skip ? skip : 0);
         if (resp1.length || resp2.length)
         {
             return res.status(200).json({
@@ -147,7 +147,7 @@ const getUserLogs = async (req, res, next) => {
     if (type == EXCHANGE_TYPE_SEND)
     {
         let resp = await ExchangeMoney.find({ data, 'sender_id': user.user_id }).limit(limit ? limit : 20)
-        .offset(offset ? offset : 0);
+        .skip(skip ? skip : 0);
         if (resp.length)
         {
             return res.status(200).json({
@@ -164,7 +164,7 @@ const getUserLogs = async (req, res, next) => {
     if (type == EXCHANGE_TYPE_RECEIVE)
     {
         let resp = await ExchangeMoney.find({ data, 'receiver_id': user.user_id }).limit(limit ? limit : 20)
-        .offset(offset ? offset : 0);
+        .skip(skip ? skip : 0);
         if (resp.length)
         {
             return res.status(200).json({
@@ -181,7 +181,7 @@ const getUserLogs = async (req, res, next) => {
     if (type == EXCHANGE_TYPE_DEBT)
     {
         let resp = await Remind.find({ data, status: "DONE", $or:[ {'reminder_account_number': accountNumber}, {'reminded_account_number': accountNumber} ]}).limit(limit ? limit : 20)
-        .offset(offset ? offset : 0);
+        .skip(skip ? skip : 0);
         if (resp.length)
         {
             return res.status(200).json({
@@ -199,13 +199,13 @@ const getUserLogs = async (req, res, next) => {
 //API get history for admin
 //filter by partnerCode, time
 //get total money exchange in time
-//GET param q={"partnerCode":...},start:time,end:time,limit,offset,getTotal=true
+//GET param q={"partnerCode":...},start:time,end:time,limit,skip,getTotal=true
 const getAllHistoryAdmin = async (req, res, next) => {
   let q = req.query.q;
   let startDate = req.query.start;
   let endDate = req.query.end;
-  let limit = req.query.limit;
-  let offset = req.query.offset;
+  let limit = parseInt(req.query.limit);
+  let skip = parseInt(req.query.skip);
   let getTotal = req.query.total;
 
   let data = {};
@@ -227,7 +227,7 @@ const getAllHistoryAdmin = async (req, res, next) => {
 
   let resp = await ExchangeMoneyDB.find(data)
     .limit(limit ? limit : 20)
-    .offset(offset ? offset : 0);
+    .skip(skip ? skip : 0);
 
   if (resp) {
     return res.status(200).json({

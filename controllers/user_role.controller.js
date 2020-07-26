@@ -49,7 +49,7 @@ const changePassword = async(req, res, next) => {
 const getInfoUser = async (req, res, next) => {
     let roleCode = req.query.roleCode;
     let limit = parseInt(req.query.limit);
-    let offset = parseInt(req.query.offset);
+    let skip = parseInt(req.query.skip);
     let total = await UserRole.count({ role_code: roleCode });
     UserRole.find({ role_code: roleCode }, {username: 0, password: 0}, function(err, users) {
         console.log(users)
@@ -66,7 +66,7 @@ const getInfoUser = async (req, res, next) => {
             })
         }
     }).limit(limit ? limit : 20)
-    .skip(offset ? offset : 0);
+    .skip(skip ? skip : 0);
 }
 
 //API create user use bank POST
@@ -171,8 +171,8 @@ const resetPassword = async(req,res,next) => {
 }
 
 const getPartnerInfo = async(req, res, next) => {
-    let limit = req.query.limit;
-    let offset = req.query.offset;
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.skip);
     Partner.find({}, {partner_public_key: 0, partner_secret_key: 0}, function(err, partners){
         if (partners.length)
         {
@@ -186,7 +186,7 @@ const getPartnerInfo = async(req, res, next) => {
             })
         }
     }).limit(limit ? limit : 20)
-    .offset(offset ? offset : 0);
+    .skip(skip ? skip : 0);
 }
 
 module.exports = {
