@@ -43,7 +43,7 @@ const getReminder = async(req, res, next) => {
     let startDate = req.query.start;
     let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
-    let skip = parseInt(req.query.skip);
+    let skip = parseInt(req.query.offset);
 
   let data = {};
   if (startDate && endDate) {
@@ -84,7 +84,7 @@ const getReminded = async(req, res, next) => {
     let startDate = req.query.start;
     let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
-    let skip = parseInt(req.query.skip);
+    let skip = parseInt(req.query.offset);
 
   let data = {};
   if (startDate && endDate) {

@@ -49,7 +49,7 @@ const changePassword = async(req, res, next) => {
 const getInfoUser = async (req, res, next) => {
     let roleCode = req.query.roleCode;
     let limit = parseInt(req.query.limit);
-    let skip = parseInt(req.query.skip);
+    let skip = parseInt(req.query.offset);
     let total = await UserRole.count({ role_code: roleCode });
     UserRole.find({ role_code: roleCode }, {username: 0, password: 0}, function(err, users) {
         console.log(users)
@@ -172,7 +172,7 @@ const resetPassword = async(req,res,next) => {
 
 const getPartnerInfo = async(req, res, next) => {
     let limit = parseInt(req.query.limit);
-    let skip = parseInt(req.query.skip);
+    let skip = parseInt(req.query.offset);
     Partner.find({}, {partner_public_key: 0, partner_secret_key: 0}, function(err, partners){
         if (partners.length)
         {
