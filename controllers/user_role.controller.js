@@ -47,11 +47,12 @@ const changePassword = async(req, res, next) => {
 };
 
 const getInfoUser = async (req, res, next) => {
-    let roleCode = req.query.roleCode;
+    let q = JSON.parse(req.query.q);
+    console.log(q);
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
-    let total = await UserRole.count({ role_code: roleCode });
-    UserRole.find({ role_code: roleCode }, {username: 0, password: 0}, function(err, users) {
+    let total = await UserRole.count({ role_code: q.roleCode });
+    UserRole.find({ role_code: q.roleCode }, {username: 0, password: 0}, function(err, users) {
         console.log(users)
         if (users)
         {
