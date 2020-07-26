@@ -10,7 +10,7 @@ router.post('/change-password', changePassword);
 router.post('/create', createUser);
 router.get('/get-info', getInfoUser);
 router.get('/get-partner', getPartnerInfo);
-router.put('/', updateInfoUser);
-router.delete('/', deleteInfoUser);
+router.put('/update', updateInfoUser);
+router.delete('/delete', deleteInfoUser);
 
 module.exports = router;

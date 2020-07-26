@@ -31,11 +31,10 @@ const getAllById = async (req, res, next) => {
     let respRec = await ExchangeMoneyDB.find({ receiver_id: q.userId, data }).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
 
-    let totalSender = await ExchangeMoneyDB.count({
-        sender_id: q.userId, data
-    });
-    let totalRec = await ExchangeMoneyDB.count({
-        receiver_id: q.userId, data
+    let totalSender = await RemindDB.count({
+        data,
+        reminder_account_number: currentAccount.account_number,
+        status: "UNDONE"
     });
 
     if (respSender && respRec) {
@@ -43,9 +42,7 @@ const getAllById = async (req, res, next) => {
         data["receive"] = respRec;
         return res.status(200).json({
             message: "Get all history sender successfully",
-            data: data,
-            totalSender,
-            totalRec
+            data: data
         })
     }
 
@@ -117,7 +114,6 @@ const getUserLogs = async (req, res, next) => {
     let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
-    
 
     let data = {};
     if (startDate && endDate) {
@@ -203,6 +199,7 @@ const getAllHistoryAdmin = async (req, res, next) => {
     let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
+    let getTotal = req.query.total;
 
     let data = {};
     if (startDate && endDate) {
@@ -213,9 +210,11 @@ const getAllHistoryAdmin = async (req, res, next) => {
         };
     }
 
-    let total = await ExchangeMoneyDB.count({
-        data
-    });
+    if (getTotal) {
+        data.partner_code = { $type: "string" };
+    } else {
+        data.partner_code = q.partnerCode;
+    }
 
     data.total = { $sum: "$money" };
 
@@ -227,7 +226,6 @@ const getAllHistoryAdmin = async (req, res, next) => {
         return res.status(200).json({
             message: "Query history successful",
             data: resp,
-            total
         });
     }
 
