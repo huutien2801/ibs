@@ -72,8 +72,8 @@ const getInfoUser = async (req, res, next) => {
 
 const updateInfoUser = async (req, res, next) => {
     let userId = req.query.userId;
-    const {address, dob, identity_number, phone } = req.body;
-    UserRole.update({user_id: userId}, {address, dob, identity_number, phone}, function(err, user) {
+    const {address, dob, phone } = req.body;
+    UserRole.update({user_id: userId}, {address, dob, phone}, function(err, user) {
         if (user)
         {
             return res.status(200).json({

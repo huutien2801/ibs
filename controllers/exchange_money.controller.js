@@ -144,11 +144,15 @@ const getUserLogs = async (req, res, next) => {
     }
 
     if (type == EXCHANGE_TYPE_SEND) {
+        let total = await RemindDB.count({
+            data, 'sender_id': user.user_id
+        });
         let resp = await ExchangeMoney.find({ data, 'sender_id': user.user_id }).limit(limit ? limit : 20)
             .skip(skip ? skip : 0);
         if (resp.length) {
             return res.status(200).json({
                 data: resp,
+                total
             })
         }
         else {
@@ -159,11 +163,15 @@ const getUserLogs = async (req, res, next) => {
     }
 
     if (type == EXCHANGE_TYPE_RECEIVE) {
+        let total = await RemindDB.count({
+            data, 'receiver_id': user.user_id
+        });
         let resp = await ExchangeMoney.find({ data, 'receiver_id': user.user_id }).limit(limit ? limit : 20)
             .skip(skip ? skip : 0);
         if (resp.length) {
             return res.status(200).json({
                 data: resp,
+                total
             })
         }
         else {
@@ -174,11 +182,15 @@ const getUserLogs = async (req, res, next) => {
     }
 
     if (type == EXCHANGE_TYPE_DEBT) {
+        let total = await RemindDB.count({
+            data, status: "DONE", $or: [{ 'reminder_account_number': accountNumber }, { 'reminded_account_number': accountNumber }]
+        });
         let resp = await Remind.find({ data, status: "DONE", $or: [{ 'reminder_account_number': accountNumber }, { 'reminded_account_number': accountNumber }] }).limit(limit ? limit : 20)
             .skip(skip ? skip : 0);
         if (resp.length) {
             return res.status(200).json({
                 data: resp,
+                total
             })
         }
         else {
