@@ -118,7 +118,7 @@ const createUser = async (req, res, next) => {
         })
     }
 
-    let existIdentityNumber = await UserRole.findOne({ identity_number } );
+    let existIdentityNumber = await UserRole.findOne({ identityNumber } );
     if (existIdentityNumber  != null)
     {
         return res.status(400).json({
