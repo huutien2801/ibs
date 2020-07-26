@@ -100,11 +100,39 @@ const createUser = async (req, res, next) => {
         data["email"] = email;
     }
 
+    let existEmail = await UserRole.findOne({ email } );
+    if (existEmail != null)
+    {
+        return res.status(400).json({
+            message: "Existing email",
+            errorCode: "EXISTING_EMAIL"
+        })
+    }
+
+    let existUsername = await UserRole.findOne({ username } );
+    if (existUsername != null)
+    {
+        return res.status(400).json({
+            message: "Existing username",
+            errorCode: "EXISTING_USERNAME"
+        })
+    }
+
+    let existIdentityNumber = await UserRole.findOne({ identity_number } );
+    if (existIdentityNumber  != null)
+    {
+        return res.status(400).json({
+            message: "Existing identity number",
+            errorCode: "EXISTING_IDENTITYNUMBER"
+        })
+    }
+
     let user = await UserRole.create(data);
 
     if (user == null) {
         return res.status(400).json({
-            message: "Can't create user"
+            message: "Something wrong with the system",
+            errorCode: "BAD_REQUEST"
         })
     }
 
