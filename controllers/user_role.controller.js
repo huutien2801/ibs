@@ -70,6 +70,43 @@ const getInfoUser = async (req, res, next) => {
     .skip(skip ? skip : 0);
 }
 
+const updateInfoUser = async (req, res, next) => {
+    let userId = req.query.userId;
+    const {address, dob, identity_number, phone } = req.body;
+    UserRole.update({user_id: userId}, {address, dob, identity_number, phone}, function(err, user) {
+        if (user)
+        {
+            return res.status(200).json({
+                message: "Update succeed",
+            })
+        }
+        else
+        {
+            return res.status(400).json({
+                message: err
+            })
+        }
+    })
+}
+
+const deleteInfoUser = async (req, res, next) => {
+    let userId = req.query.userId;
+    UserRole.deleteOne({user_id: userId}, function(err, user) {
+        if (user)
+        {
+            return res.status(200).json({
+                message: "Delete succeed",
+            })
+        }
+        else
+        {
+            return res.status(400).json({
+                message: err
+            })
+        }
+    })
+}
+
 //API create user use bank POST
 //Create new user -> create new bank account of user
 //Truyền vào body username, password, email, fullName, nickName, phone, identityNumber, address, dob
@@ -174,11 +211,13 @@ const resetPassword = async(req,res,next) => {
 const getPartnerInfo = async(req, res, next) => {
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
+    let total = await Partner.count({});
     Partner.find({}, {partner_public_key: 0, partner_secret_key: 0}, function(err, partners){
         if (partners.length)
         {
             return res.status(200).json({
-                partners
+                partners,
+                total
             })
         }
         else {
@@ -195,5 +234,7 @@ module.exports = {
     getInfoUser, 
     createUser,
     resetPassword,
-    getPartnerInfo
+    getPartnerInfo,
+    updateInfoUser,
+    deleteInfoUser
 };

@@ -108,6 +108,12 @@ const getReminded = async(req, res, next) => {
         });
     }
 
+    let total = await RemindDB.count({ 
+        data,
+        reminded_account_number: currentAccount.account_number,
+        status: "UNDONE"
+    });
+
     let resp = await RemindDB.find({
         data,
         reminded_account_number: currentAccount.account_number,
@@ -119,6 +125,7 @@ const getReminded = async(req, res, next) => {
         return res.status(200).json({
             message: "Get reminded successfully",
             data: resp,
+            total
         })
     }
 

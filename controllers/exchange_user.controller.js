@@ -43,10 +43,17 @@ const showList = async(req, res, next) => {
             },
         };
     }
+
+    let total = await ExchangeUser.count({
+        sender_account_number: curUser.account_number, 
+        data
+    });
+
     ExchangeUser.find({sender_account_number: curUser.account_number, data}, function(err, users) {
         if (users.length) {
             return res.status(200).json({
-                users
+                users,
+                total
             })
         }
         else {

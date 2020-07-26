@@ -2,7 +2,7 @@ const ExchangeMoneyDB = require('../models/exchange_money.model')
 const BankAccount = require('../models/bank_account.model')
 const UserRole = require('../models/user_role.model')
 const Remind = require('../models/remind.model');
-const {EXCHANGE_TYPE_ALL, EXCHANGE_TYPE_SEND, EXCHANGE_TYPE_RECEIVE, EXCHANGE_TYPE_DEBT} = require('../utils/util')
+const { EXCHANGE_TYPE_ALL, EXCHANGE_TYPE_SEND, EXCHANGE_TYPE_RECEIVE, EXCHANGE_TYPE_DEBT } = require('../utils/util')
 
 require('dotenv').config({
     path: './config/config.env',
@@ -10,33 +10,42 @@ require('dotenv').config({
 
 //Lấy lịch sử thanh toán GET
 //Truyền query q={userId}
-const getAllById = async(req, res, next) => {
-    let q = req.query.q;
+const getAllById = async (req, res, next) => {
+    let q = JSON.parse(req.query.q);
     let startDate = req.query.start;
     let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
 
-  let data = {};
-  if (startDate && endDate) {
-    data = {
-      $where: function () {
-        return this.updated_date > startDate && this.updated_date < endDate;
-      },
-    };
-  }
+    let data = {};
+    if (startDate && endDate) {
+        data = {
+            $where: function () {
+                return this.updated_date > startDate && this.updated_date < endDate;
+            },
+        };
+    }
 
-    let respSender = await ExchangeMoneyDB.find({sender_id: q.userId, data}).limit(limit ? limit : 20)
-                                                                      .skip(skip ? skip : 0);
-    let respRec = await ExchangeMoneyDB.find({receiver_id: q.userId, data}).limit(limit ? limit : 20)
-                                                                     .skip(skip ? skip : 0);
+    let respSender = await ExchangeMoneyDB.find({ sender_id: q.userId, data }).limit(limit ? limit : 20)
+        .skip(skip ? skip : 0);
+    let respRec = await ExchangeMoneyDB.find({ receiver_id: q.userId, data }).limit(limit ? limit : 20)
+        .skip(skip ? skip : 0);
 
-    if(respSender && respRec){
+    let totalSender = await ExchangeMoneyDB.count({
+        sender_id: q.userId, data
+    });
+    let totalRec = await ExchangeMoneyDB.count({
+        receiver_id: q.userId, data
+    });
+
+    if (respSender && respRec) {
         data["sender"] = respSender;
         data["receive"] = respRec;
         return res.status(200).json({
-            message:"Get all history sender successfully",
-            data: data
+            message: "Get all history sender successfully",
+            data: data,
+            totalSender,
+            totalRec
         })
     }
 
@@ -46,20 +55,18 @@ const getAllById = async(req, res, next) => {
 }
 
 
-const depositMoney = async(req, res, next) => {
-    const {accountNumber, username, money, feeType} = req.body;
-    if (accountNumber != null && username == null)
-    {
-        const curUser = await BankAccount.findOne({ account_number: accountNumber});
-        let resp1 = await ExchangeMoneyDB.create({ 
+const depositMoney = async (req, res, next) => {
+    const { accountNumber, username, money, feeType } = req.body;
+    if (accountNumber != null && username == null) {
+        const curUser = await BankAccount.findOne({ account_number: accountNumber });
+        let resp1 = await ExchangeMoneyDB.create({
             sender_id: curUser.user_id,
             receiver_id: curUser.user_id,
             money: money,
             fee_type: feeType
         });
-        let resp2 = await BankAccount.findOneAndUpdate({ account_number: accountNumber}, {balance: curUser.balance + money});
-        if (resp1 && resp2)
-        {
+        let resp2 = await BankAccount.findOneAndUpdate({ account_number: accountNumber }, { balance: curUser.balance + money });
+        if (resp1 && resp2) {
             return res.status(200).json({
                 message: "Deposit money success"
             })
@@ -71,22 +78,20 @@ const depositMoney = async(req, res, next) => {
         }
     }
     else {
-        if (accountNumber == null && username != null)
-        {
-            const curUser = await UserRole.findOne({ username: username});
-            let curBankAccount = await BankAccount.findOne({ user_id: curUser.user_id});
+        if (accountNumber == null && username != null) {
+            const curUser = await UserRole.findOne({ username: username });
+            let curBankAccount = await BankAccount.findOne({ user_id: curUser.user_id });
             let curAccountNumber = curBankAccount.account_number;
             let curBalance = curBankAccount.balance;
             let newBalance = money + curBalance;
-            let resp1 = await ExchangeMoneyDB.create({ 
+            let resp1 = await ExchangeMoneyDB.create({
                 sender_id: curUser.user_id,
                 receiver_id: curUser.user_id,
                 money: money,
                 fee_type: feeType
             });
-            let resp2 = await BankAccount.findOneAndUpdate({ account_number: curAccountNumber}, {balance: newBalance});
-            if (resp1 && resp2)
-            {
+            let resp2 = await BankAccount.findOneAndUpdate({ account_number: curAccountNumber }, { balance: newBalance });
+            if (resp1 && resp2) {
                 return res.status(200).json({
                     message: "Deposit money success"
                 })
@@ -97,8 +102,7 @@ const depositMoney = async(req, res, next) => {
                 })
             }
         }
-        else
-        {
+        else {
             return res.status(400).json({
                 message: "Can't find your account"
             });
@@ -113,25 +117,24 @@ const getUserLogs = async (req, res, next) => {
     let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
+    
 
-  let data = {};
-  if (startDate && endDate) {
-    data = {
-      $where: function () {
-        return this.updated_date > startDate && this.updated_date < endDate;
-      },
-    };
-  }
-    let user = await BankAccount.findOne({ account_number: accountNumber});
+    let data = {};
+    if (startDate && endDate) {
+        data = {
+            $where: function () {
+                return this.updated_date > startDate && this.updated_date < endDate;
+            },
+        };
+    }
+    let user = await BankAccount.findOne({ account_number: accountNumber });
 
-    if (type == EXCHANGE_TYPE_ALL)
-    {
-        let resp1 = await ExchangeMoney.find({ $or: [ {'sender_id': user.user_id}, {'receiver_id': user.user_id} ], data}).limit(limit ? limit : 20)
-        .skip(skip ? skip : 0);
-        let resp2 = await Remind.find({ data, status: "DONE", $or:[ {'reminder_account_number': accountNumber}, {'reminded_account_number': accountNumber} ]}).limit(limit ? limit : 20)
-        .skip(skip ? skip : 0);
-        if (resp1.length || resp2.length)
-        {
+    if (type == EXCHANGE_TYPE_ALL) {
+        let resp1 = await ExchangeMoney.find({ $or: [{ 'sender_id': user.user_id }, { 'receiver_id': user.user_id }], data }).limit(limit ? limit : 20)
+            .skip(skip ? skip : 0);
+        let resp2 = await Remind.find({ data, status: "DONE", $or: [{ 'reminder_account_number': accountNumber }, { 'reminded_account_number': accountNumber }] }).limit(limit ? limit : 20)
+            .skip(skip ? skip : 0);
+        if (resp1.length || resp2.length) {
             return res.status(200).json({
                 data1: resp1,
                 data2: resp2
@@ -144,12 +147,10 @@ const getUserLogs = async (req, res, next) => {
         }
     }
 
-    if (type == EXCHANGE_TYPE_SEND)
-    {
+    if (type == EXCHANGE_TYPE_SEND) {
         let resp = await ExchangeMoney.find({ data, 'sender_id': user.user_id }).limit(limit ? limit : 20)
-        .skip(skip ? skip : 0);
-        if (resp.length)
-        {
+            .skip(skip ? skip : 0);
+        if (resp.length) {
             return res.status(200).json({
                 data: resp,
             })
@@ -161,12 +162,10 @@ const getUserLogs = async (req, res, next) => {
         }
     }
 
-    if (type == EXCHANGE_TYPE_RECEIVE)
-    {
+    if (type == EXCHANGE_TYPE_RECEIVE) {
         let resp = await ExchangeMoney.find({ data, 'receiver_id': user.user_id }).limit(limit ? limit : 20)
-        .skip(skip ? skip : 0);
-        if (resp.length)
-        {
+            .skip(skip ? skip : 0);
+        if (resp.length) {
             return res.status(200).json({
                 data: resp,
             })
@@ -178,12 +177,10 @@ const getUserLogs = async (req, res, next) => {
         }
     }
 
-    if (type == EXCHANGE_TYPE_DEBT)
-    {
-        let resp = await Remind.find({ data, status: "DONE", $or:[ {'reminder_account_number': accountNumber}, {'reminded_account_number': accountNumber} ]}).limit(limit ? limit : 20)
-        .skip(skip ? skip : 0);
-        if (resp.length)
-        {
+    if (type == EXCHANGE_TYPE_DEBT) {
+        let resp = await Remind.find({ data, status: "DONE", $or: [{ 'reminder_account_number': accountNumber }, { 'reminded_account_number': accountNumber }] }).limit(limit ? limit : 20)
+            .skip(skip ? skip : 0);
+        if (resp.length) {
             return res.status(200).json({
                 data: resp,
             })
@@ -201,44 +198,42 @@ const getUserLogs = async (req, res, next) => {
 //get total money exchange in time
 //GET param q={"partnerCode":...},start:time,end:time,limit,skip,getTotal=true
 const getAllHistoryAdmin = async (req, res, next) => {
-  let q = req.query.q;
-  let startDate = req.query.start;
-  let endDate = req.query.end;
-  let limit = parseInt(req.query.limit);
-  let skip = parseInt(req.query.offset);
-  let getTotal = req.query.total;
+    let q = req.query.q;
+    let startDate = req.query.start;
+    let endDate = req.query.end;
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.offset);
 
-  let data = {};
-  if (startDate && endDate) {
-    data = {
-      $where: function () {
-        return this.updated_date > startDate && this.updated_date < endDate;
-      },
-    };
-  }
+    let data = {};
+    if (startDate && endDate) {
+        data = {
+            $where: function () {
+                return this.updated_date > startDate && this.updated_date < endDate;
+            },
+        };
+    }
 
-  if (getTotal) {
-    data.partner_code = { $type: "string" };
-  } else {
-    data.partner_code = q.partnerCode;
-  }
-
-  data.total = { $sum: "$money" };
-
-  let resp = await ExchangeMoneyDB.find(data)
-    .limit(limit ? limit : 20)
-    .skip(skip ? skip : 0);
-
-  if (resp) {
-    return res.status(200).json({
-      message: "Query history successful",
-      data: resp,
+    let total = await ExchangeMoneyDB.count({
+        data
     });
-  }
 
-  return res.status(400).json({
-    message: "Can't get history at this time.",
-  });
+    data.total = { $sum: "$money" };
+
+    let resp = await ExchangeMoneyDB.find(data)
+        .limit(limit ? limit : 20)
+        .skip(skip ? skip : 0);
+
+    if (resp) {
+        return res.status(200).json({
+            message: "Query history successful",
+            data: resp,
+            total
+        });
+    }
+
+    return res.status(400).json({
+        message: "Can't get history at this time.",
+    });
 };
 
 module.exports = {
