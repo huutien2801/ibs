@@ -25,24 +25,27 @@ const getAllById = async (req, res, next) => {
             },
         };
     }
+    
+    let totalSender = await ExchangeMoneyDB.count({
+        sender_id: q.userId, data
+    });
+    let totalRec = await ExchangeMoneyDB.count({
+        sender_id: q.userId, data
+    });
 
     let respSender = await ExchangeMoneyDB.find({ sender_id: q.userId, data }).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
     let respRec = await ExchangeMoneyDB.find({ receiver_id: q.userId, data }).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
-
-    let totalSender = await RemindDB.count({
-        data,
-        reminder_account_number: currentAccount.account_number,
-        status: "UNDONE"
-    });
+    
 
     if (respSender && respRec) {
         data["sender"] = respSender;
         data["receive"] = respRec;
         return res.status(200).json({
             message: "Get all history sender successfully",
-            data: data
+            data: data,
+            total: totalSender + totalRec
         })
     }
 
@@ -126,6 +129,12 @@ const getUserLogs = async (req, res, next) => {
     let user = await BankAccount.findOne({ account_number: accountNumber });
 
     if (type == EXCHANGE_TYPE_ALL) {
+        let totalExchange = await ExchangeMoneyDB.count({
+            $or: [{ 'sender_id': user.user_id }, { 'receiver_id': user.user_id }], data
+        });
+        let totalRemind = await RemindDB.count({
+            data, status: "DONE", $or: [{ 'reminder_account_number': accountNumber }, { 'reminded_account_number': accountNumber }]
+        });
         let resp1 = await ExchangeMoney.find({ $or: [{ 'sender_id': user.user_id }, { 'receiver_id': user.user_id }], data }).limit(limit ? limit : 20)
             .skip(skip ? skip : 0);
         let resp2 = await Remind.find({ data, status: "DONE", $or: [{ 'reminder_account_number': accountNumber }, { 'reminded_account_number': accountNumber }] }).limit(limit ? limit : 20)
@@ -133,7 +142,8 @@ const getUserLogs = async (req, res, next) => {
         if (resp1.length || resp2.length) {
             return res.status(200).json({
                 data1: resp1,
-                data2: resp2
+                data2: resp2,
+                total: totalExchange + totalRemind
             })
         }
         else {
