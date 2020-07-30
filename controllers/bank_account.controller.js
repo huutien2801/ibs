@@ -1,6 +1,7 @@
 const BankAccountDB = require('../models/bank_account.model');
 const RatioDB = require('../models/ratio.model');
 const ExchangeMoneyDB = require('../models/exchange_money.model');
+const UserRoleDB = require('../models/user_role.model');
 const {generateAccountNumber, generatePIN, FEE_TRANSFER, STANDARD_ACCOUNT, DEPOSIT_ACCOUNT} = require('../utils/util')
 
 require('dotenv').config({
@@ -10,17 +11,25 @@ require('dotenv').config({
 //API create bank account of user POST
 //truyền vào body type, balance, ratioMonth, deposit
 const createBankAccount = async(req, res, next) => {
-    const {type, balance, ratioMonth, deposit} = req.body
+    const {userId, type, balance, ratioMonth, deposit} = req.body
+
+    let user = await UserRoleDB.findOne({"user_id":userId})
+    if (!user){
+        return res.status(400).json({
+            message: "User is not exist."
+        })
+    }
 
     let data = {
-        user_id: req.user.user_id,
-        account_number: generateAccountNumber(),
+        user_id: parseInt(userId),
+        account_number: "9700" + user.identity_number,
         type,
     }
 
     var currentTime = new Date();
     if (type == STANDARD_ACCOUNT){
         data["pin"] = generatePIN();
+        data["balance"] = balance;
         data["expired_date"] = currentTime.setFullYear(currentTime.getFullYear() + 4);
     } else {
         data["deposit"] = deposit;
@@ -40,12 +49,7 @@ const createBankAccount = async(req, res, next) => {
         data["redeem_date"] = currentTime.setMonth(currentTime.getMonth() + ratioResp.months);
     }
 
-    let resp = await BankAccountDB.create({
-        type,
-        balance,
-        user_id: data.user_id,
-        account_number: data.account_number
-    });
+    let resp = await BankAccountDB.create(data);
     if(resp){
         return res.status(200).json({
             data: resp
