@@ -6,11 +6,11 @@ const router = express.Router();
 
 const { protect } = require('../middlewares/auth.middleware');
 
-router.post('/change-password', changePassword);
-router.post('/create', createUser);
-router.get('/get-info', getInfoUser);
-router.get('/get-partner', getPartnerInfo);
-router.put('/update', updateInfoUser);
-router.delete('/delete', deleteInfoUser);
+router.post('/change-password', protect, changePassword);
+router.post('/create', protect, createUser);
+router.get('/get-info', protect, getInfoUser);
+router.get('/get-partner', protect, getPartnerInfo);
+router.put('/update', protect, updateInfoUser);
+router.delete('/delete', protect, deleteInfoUser);
 
 module.exports = router;
