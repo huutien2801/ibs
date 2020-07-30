@@ -1,6 +1,8 @@
 const UserRole = require('../models/user_role.model');
 const Partner = require('../models/partner.model');
+const BankAccount = require('../models/bank_account.model');
 const bcrypt = require('bcrypt');
+const {generateAccountNumber} = require('../utils/util')
 
 
 require('dotenv').config({
@@ -173,6 +175,26 @@ const createUser = async (req, res, next) => {
         return res.status(400).json({
             message: "Something wrong with the system",
             errorCode: "BAD_REQUEST"
+        })
+    }
+
+    if (role_code == "CUSTOMER")
+    {
+        let data = {
+            type: "STANDARD",
+            balance: 0,
+            user_id: user.user_id,
+            account_number: generateAccountNumber()
+        };
+        let bankAccount = await BankAccount.create(data)
+        if (bankAccount)
+        {
+            res.status(200).json({
+                message: "Created"
+            })
+        }
+        else res.status(400).json({
+            message: "Can't create user"
         })
     }
 
