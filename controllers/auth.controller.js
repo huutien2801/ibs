@@ -95,12 +95,12 @@ const registerEmployee = async (req, res, next) => {
 // @route     POST /api/v1/auth/login
 // @access    Public
 const login = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
   // if (!validateLoginInput(req.body)) {
   //   return next(ErrorCode.WRONG_PARAMETER);
   // }
   // Check for user
-  const user = await User.findOne({ email }, { _id: 0 });
+  const user = await User.findOne({ username }, { _id: 0 });
 
   if (!user) {
     return next(ErrorCode.REQUEST_TIMEOUT);

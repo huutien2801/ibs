@@ -36,6 +36,9 @@ const UserRoleSchema = mongoose.Schema({
         type: String,
         unique: true
     },
+    gender: {
+        type: String
+    },
     phone: {
         type: String,
         required: true
