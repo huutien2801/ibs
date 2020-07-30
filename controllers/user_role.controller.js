@@ -21,12 +21,6 @@ const changePassword = async(req, res, next) => {
             })
         }
         else {
-            if (newPassword != confirmPassword) {
-                return res.status(400).json({
-                    message: "Your new password is not match"
-                })
-            }
-            else {
                 bcrypt.hash(newPassword, salt, async (err, hash) => {
                     let update = { 'password': hash};
                     console.log(hash);
@@ -45,7 +39,7 @@ const changePassword = async(req, res, next) => {
                 })
             }
         }
-    });
+    );
 };
 
 const getInfoUser = async (req, res, next) => {
@@ -114,7 +108,7 @@ const deleteInfoUser = async (req, res, next) => {
 //Truyền vào body username, password, email, fullName, nickName, phone, identityNumber, address, dob
 const createUser = async (req, res, next) => {
 
-    const { username, password, email, fullName, nickName, phone, identityNumber, address, dob, role_code } = req.body;
+    const { username, password, email, fullName, nickName, phone, identityNumber, address, dob, role_code, gender } = req.body;
     
 
     if (username == "" || password == "" || fullName == "" || phone == "" || identityNumber == "" || address == "" || dob == null) {
@@ -131,7 +125,8 @@ const createUser = async (req, res, next) => {
         identity_number: identityNumber,
         address,
         dob,
-        role_code
+        role_code,
+        gender
     };
 
     if (nickName != ""){
