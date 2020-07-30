@@ -4,7 +4,7 @@ const { protect } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router.post('/create', createBankAccount);
+router.post('/create', protect, createBankAccount);
 router.post('/transfer', protect, transferMoney);
 
 module.exports = router;

@@ -10,22 +10,23 @@ require('dotenv').config({
 });
 
 const changePassword = async (req, res, next) => {
-    console.log(req)
+    console.log(req.user);
     const { oldPassword, newPassword } = req.body
     var user = await UserRole.findOne({ username: "thoaiemployee" })
-    console.log(user);
-    var salt = await bcrypt.genSalt(10);
-    const isMatch = await user.matchPassword(password);
+
+    const isMatch = await user.matchPassword(oldPassword);
     if (!isMatch) {
         return res.status(400).json({
             message: "Your password is incorrect"
         })
     }
 
-    let update = {'password': newPassword };
-    console.log(hash);
+    const salt = await bcrypt.genSalt(10);
+    let password = await bcrypt.hash(newPassword, salt);
+
+    let update = {'password': password };
+
     let resp = await UserRole.updateOne({ user_id: user.user_id }, update);
-    console.log(resp);
     if (resp) {
         return res.status(200).json({
             message: "Your password has been updated",
@@ -65,7 +66,17 @@ const getInfoUser = async (req, res, next) => {
 const updateInfoUser = async (req, res, next) => {
     let userId = req.query.userId;
     const { address, dob, phone } = req.body;
-    UserRole.update({ user_id: userId }, { address, dob, phone }, function (err, user) {
+    let updater = {}
+    if (address){
+        updater['address'] = address
+    }
+    if (dob) {
+        updater['dob'] = dob
+    }
+    if (phone){
+        updater['phone'] = phone
+    }
+    UserRole.update({ user_id: userId }, updater, function (err, user) {
         if (user) {
             return res.status(200).json({
                 message: "Update succeed",

@@ -76,6 +76,13 @@ UserRoleSchema.pre('save', async function (next) {
     this.password = await bcrypt.hash(this.password, salt);
 });
 
+// UserRoleSchema.pre('updateOne', async function (next) {
+//     const data = this.getUpdate()
+
+//     const salt = await bcrypt.genSalt(10);
+//     this.password = await bcrypt.hash(data.password, salt);
+// });
+
 // Sign JWT and return
 UserRoleSchema.methods.getSignedJwtToken = function () {
     return jwt.sign({
