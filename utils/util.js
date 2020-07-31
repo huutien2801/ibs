@@ -28,7 +28,7 @@ function sendOTPMail(email, fullname, otpCode) {
       return {status: "ERROR", message: "Can't sen't message at this time. " + error}
     }
   });
-  return {status: "OK", message: "Send email successful" + info.response}
+  return {status: "OK", message: "Send email successful"}
 }
 
 module.exports = {
