@@ -9,8 +9,17 @@ require('dotenv').config({
 
 //API create partner
 const createOTPMail = async(req, res, next) => {
-    let user = await UserRoleDB.find({user_id:req.user.user_id});
-    if(user == null){
+    const { email } = req.query
+    filter = {}
+    if (email){
+        filter['email'] = email
+    }
+    if (req.user){
+        filter['user_id'] = req.user.user_id
+    }
+    console.log(filter)
+    let user = await UserRoleDB.findOne(filter);
+    if(!user){
         return res.status(400).json({
             message: "ERROR. Can't get user."
         })
@@ -18,7 +27,7 @@ const createOTPMail = async(req, res, next) => {
 
     const otpCode = generateOTP();
 
-    let resp = sendOTPMail(user.email, user.full_name, otpCode)
+    let resp = await sendOTPMail(user.email, user.full_name, otpCode)
     let otp = OTPDB.create({
         email: user.email,
         otp: otpCode
@@ -38,16 +47,21 @@ const createOTPMail = async(req, res, next) => {
 const confirmOTP = async(req, res, next) => {
     const {OTP} = req.body;
 
-    let user = await UserRoleDB.find({user_id:req.user.user_id});
-    if(user == null){
+    let user = await UserRoleDB.findOne({user_id:req.user.user_id});
+    if(!user){
         return res.status(400).json({
             message: "ERROR. Can't get user."
         })
     }
 
     let otp = await OTPDB.find({email: user.email}).limit(1).sort({createdAt:-1})
-
-    if (otp == OTP){
+    if (!otp){
+        return res.status(400).json({
+            status: "ERROR",
+            message: "Your OTP code is expired."
+        })
+    }
+    if (otp[0].otp == OTP){
         return res.status(200).json({
             status: "OK",
             message: "OTP match."

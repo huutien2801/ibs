@@ -1,10 +1,10 @@
-const UserRoleDB = require('../models/user_role.model')
+
 var nodemailer = require("nodemailer");
 var transporter = nodemailer.createTransport({
-    service: "gmail",
+    service: "Gmail",
     auth: {
-      user: "thompsongold31@gmail.com",
-      pass: "Hackintosh123",
+      user: "lathoai3107@gmail.com",
+      pass: "Lathoai1311",
     },
 });
 
@@ -17,28 +17,24 @@ function generatePIN() {
 }
 
 function generateOTP() {
-  var current = new Date();
-  var s = current.getSeconds();
-  //ms 2 số
-  var n = current.getMilliseconds() % 100;
-  return parseInt(s + n);
+  return generatePIN()
 }
 
 function sendOTPMail(email, fullname, otpCode) {
   var mailOptions = {
-    from: "thompsongold31@gmail.com",
+    from: "lathoai3107@gmail.com",
     to: email,
     subject: "Verify OTP email",
-    text: "Dear" + fullname +"\n\nYou have just placed an request at our bank. This is your verification code:\n" + otpCode.toString() + "\nIf you did not make this request, you can ignore this email.",
+    text: "Dear " + fullname +"\n\nYou have just placed an request at our bank. This is your verification code:\n" + otpCode.toString() + "\nIf you did not make this request, you can ignore this email.",
   };
-
-  transporter.sendMail(mailOptions, function (error, info) {
+  transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       return {status: "ERROR", message: "Can't sen't message at this time. " + error}
     } else {
-      return {status: "OK", message: "Send email successful"}
+      return {status: "OK", message: "Send email successful" + info.response}
     }
   });
+  return {status: "ERROR", message: "Can't send otp."}
 }
 
 module.exports = {
