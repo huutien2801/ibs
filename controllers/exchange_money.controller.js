@@ -57,7 +57,7 @@ const getAllById = async (req, res, next) => {
 
 const depositMoney = async (req, res, next) => {
     const { accountNumber, username, money, feeType } = req.body;
-    if (accountNumber != null && username == null) {
+    if (accountNumber != null) {
         const curUser = await BankAccount.findOne({ account_number: accountNumber });
         let resp1 = await ExchangeMoneyDB.create({
             sender_id: curUser.user_id,
@@ -78,7 +78,7 @@ const depositMoney = async (req, res, next) => {
         }
     }
     else {
-        if (accountNumber == null && username != null) {
+        if (username != null) {
             const curUser = await UserRole.findOne({ username: username });
             let curBankAccount = await BankAccount.findOne({ user_id: curUser.user_id });
             let curAccountNumber = curBankAccount.account_number;
