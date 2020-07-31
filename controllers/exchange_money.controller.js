@@ -30,7 +30,7 @@ const getAllById = async (req, res, next) => {
         sender_id: q.userId, data
     });
     let totalRec = await ExchangeMoneyDB.count({
-        sender_id: q.userId, data
+        receiver_id: q.userId, data
     });
 
     let respSender = await ExchangeMoneyDB.find({ sender_id: q.userId, data }).limit(limit ? limit : 20)
@@ -56,7 +56,7 @@ const getAllById = async (req, res, next) => {
 
 
 const depositMoney = async (req, res, next) => {
-    const { accountNumber, username, money, feeType } = req.body;
+    const { accountNumber, username, money, feeType, message } = req.body;
     if (accountNumber != null) {
         const curUser = await BankAccount.findOne({ account_number: accountNumber });
         let resp1 = await ExchangeMoneyDB.create({

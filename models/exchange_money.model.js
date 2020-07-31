@@ -30,6 +30,18 @@ const ExchangeMoneySchema = mongoose.Schema({
         type: String,
         required: true
     },
+    is_inside: {
+        type: Boolean,
+        required: true,
+    },
+    receiver_account_number: {
+        type: String,
+        required: true,
+    },
+    sender_account_number: {
+        type: String,
+        required: true,
+    },
     send_date: {
         type: Date,
         default: Date.now
