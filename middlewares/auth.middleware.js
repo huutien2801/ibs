@@ -20,6 +20,8 @@ const protect = async (req, res, next) => {
     }
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log(decoded)
+        console.log( process.env.JWT_SECRET)
         req.user = await User.findOne({ user_id: decoded.id });
         next();
     } catch (error) {
