@@ -209,7 +209,7 @@ const createUser = async (req, res, next) => {
             type: "STANDARD",
             balance: 0,
             user_id: user.user_id,
-            account_number: generateAccountNumber(),
+            account_number: "9700" + identityNumber,
             pin: generatePIN(),
             expired_date: currentTime.setFullYear(currentTime.getFullYear() + 4)
         };
