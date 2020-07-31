@@ -17,7 +17,7 @@ const createOTPMail = async(req, res, next) => {
     if (req.user){
         filter['user_id'] = req.user.user_id
     }
-    console.log(filter)
+ 
     let user = await UserRoleDB.findOne(filter);
     if(!user){
         return res.status(400).json({
@@ -45,16 +45,21 @@ const createOTPMail = async(req, res, next) => {
 }
 
 const confirmOTP = async(req, res, next) => {
-    const {OTP} = req.body;
-
-    let user = await UserRoleDB.findOne({user_id:req.user.user_id});
-    if(!user){
-        return res.status(400).json({
-            message: "ERROR. Can't get user."
-        })
+    const {email, OTP} = req.body;
+    filter = {}
+    if (email){
+        filter['email'] = email;
+    } else {
+        let user = await UserRoleDB.findOne({user_id: req.user.user_id});
+        if(!user){
+            return res.status(400).json({
+                message: "ERROR. Can't get user."
+            })
+        }
+        filter['email'] = user.email;
     }
 
-    let otp = await OTPDB.find({email: user.email}).limit(1).sort({createdAt:-1})
+    let otp = await OTPDB.find(filter).limit(1).sort({createdAt:-1})
     if (!otp){
         return res.status(400).json({
             status: "ERROR",

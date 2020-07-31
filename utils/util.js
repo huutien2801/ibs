@@ -8,10 +8,6 @@ var transporter = nodemailer.createTransport({
     },
 });
 
-function generateAccountNumber() {
-  return ""
-}
-
 function generatePIN() {
   return Math.floor(1000 + Math.random() * 9000);
 }
@@ -38,7 +34,6 @@ function sendOTPMail(email, fullname, otpCode) {
 }
 
 module.exports = {
-    generateAccountNumber,
     generatePIN,
     generateOTP,
     sendOTPMail,
