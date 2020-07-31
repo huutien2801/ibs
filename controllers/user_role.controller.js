@@ -11,6 +11,11 @@ require('dotenv').config({
 
 const changePassword = async (req, res, next) => {
     const { oldPassword, newPassword } = req.body
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({
+            message: "Invalid input."
+        })
+    }
     var user = await UserRole.findOne({ username: req.user.username })
     if (!user) {
         return res.status(400).json({
