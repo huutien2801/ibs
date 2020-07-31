@@ -24,13 +24,11 @@ function sendOTPMail(email, fullname, otpCode) {
     text: "Dear " + fullname +"\n\nYou have just placed an request at our bank. This is your verification code:\n" + otpCode.toString() + "\nIf you did not make this request, you can ignore this email.",
   };
   transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
+    if (error != "null") {
       return {status: "ERROR", message: "Can't sen't message at this time. " + error}
-    } else {
-      return {status: "OK", message: "Send email successful" + info.response}
     }
   });
-  return {status: "ERROR", message: "Can't send otp."}
+  return {status: "OK", message: "Send email successful" + info.response}
 }
 
 module.exports = {

@@ -5,6 +5,8 @@ const { protect } = require('../middlewares/auth.middleware');
 const router = express.Router();
 
 router.get('', createOTPMail);
-router.post('/confirm', protect, confirmOTP);
+router.get('/auth', protect, createOTPMail);
+router.post('/confirm', confirmOTP);
+router.post('/confirm-auth', protect, confirmOTP);
 
 module.exports = router;

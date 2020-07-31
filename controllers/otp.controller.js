@@ -28,12 +28,11 @@ const createOTPMail = async(req, res, next) => {
     const otpCode = generateOTP();
 
     let resp = await sendOTPMail(user.email, user.full_name, otpCode)
-    let otp = OTPDB.create({
-        email: user.email,
-        otp: otpCode
-    })
-
-    if (resp.status == "OK" && otp != null) {
+    if (resp.status == "OK") {
+        await OTPDB.create({
+            email: user.email,
+            otp: otpCode
+        })
         return res.status(200).json({
             message: resp.message
         })
