@@ -1,8 +1,9 @@
 const UserRole = require('../models/user_role.model');
 const Partner = require('../models/partner.model');
 const BankAccount = require('../models/bank_account.model');
+const OTPDB = require('../models/otp.model');
 const bcrypt = require('bcrypt');
-const { generateAccountNumber, generatePIN } = require('../utils/util')
+const { generateAccountNumber, generatePIN, generateOTP, sendOTPMail } = require('../utils/util')
 
 
 require('dotenv').config({
@@ -215,6 +216,18 @@ const createUser = async (req, res, next) => {
         };
         let bankAccount = await BankAccount.create(data)
         if (bankAccount) {
+            let otpCode = generateOTP();
+            let resp = await sendOTPMail(user.email, user.full_name, otpCode);
+            if (resp.status == "OK") {
+                await OTPDB.create({
+                    email: user.email,
+                    otp: otpCode
+                })
+            } else {
+                return res.status(400).json({
+                    message: "Error when sending email"
+                })
+            }
             res.status(200).json({
                 message: "Created"
             })

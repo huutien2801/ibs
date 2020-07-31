@@ -29,4 +29,10 @@ module.exports = {
       message: 'Token Expired',
       type: 'BAD_REQUEST'
     },
+    INACTIVE_ACCOUNT: {
+      code: 300,
+      codeError: 'INACTIVE_ACCOUNT',
+      message: 'Inactive Account',
+      type: 'BAD_REQUEST'
+    },
   };

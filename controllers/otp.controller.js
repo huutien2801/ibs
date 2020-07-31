@@ -66,6 +66,18 @@ const confirmOTP = async(req, res, next) => {
         })
     }
     if (otp[0].otp == OTP){
+        let confirmUser = UserRoleDB.findOne({email: email});
+        if (!confirmUser.is_active)
+        {
+            let updateUser = await UserRoleDB.findOneAndUpdate({email: email}, {is_active: true});
+            if (!updateUser)
+            {
+                return res.status(400).json({
+                    status: "ERROR",
+                    message: "Can't active your account"
+                })
+            }
+        }
         return res.status(200).json({
             status: "OK",
             message: "OTP match."

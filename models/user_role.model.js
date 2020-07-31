@@ -55,6 +55,11 @@ const UserRoleSchema = mongoose.Schema({
         type: Date,
         required: true
     },
+    is_active: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
     created_date: {
         type: Date,
         default: Date.now

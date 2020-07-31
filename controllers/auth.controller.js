@@ -105,6 +105,11 @@ const login = async (req, res, next) => {
   if (!user) {
     return next(ErrorCode.REQUEST_TIMEOUT);
   }
+
+  if (!user.is_active)
+  {
+    return next(ErrorCode.INACTIVE_ACCOUNT);
+  }
   // Check if password matches
   const isMatch = await user.matchPassword(password);
 
