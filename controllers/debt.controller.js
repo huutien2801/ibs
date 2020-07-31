@@ -160,7 +160,7 @@ const payRemind = async(req,res,next) =>{
     let curUser = await BankAccountDB.findOne({user_id: req.user.user_id, type: STANDARD_ACCOUNT}); // Note lại để test
     let recUser = await BankAccountDB.findOne({account_number: reminderAccountNumber, type: STANDARD_ACCOUNT});
 
-    let resp = await handleTransfer(curUser.user_id, recUser.user_id, debt, message, "PAY", curUser.balance, recUser.balance);
+    let resp = await handleTransfer(curUser.user_id, recUser.user_id, debt, message, "PAY", curUser.balance, recUser.balance, curUser.account_number, recUser.account_number, true);
     if(resp.status == "OK"){
         resp = await RemindDB.update({remind_id: remindId},{status:"DONE"});
         if (resp){

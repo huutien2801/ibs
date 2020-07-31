@@ -9,7 +9,7 @@ require('dotenv').config({
 });
 
 //Lấy lịch sử thanh toán GET
-//Truyền query q={userId}
+//Truyền query q={acountNumber, isInside}
 const getAllById = async (req, res, next) => {
     let q = JSON.parse(req.query.q);
     let startDate = req.query.start;
@@ -25,17 +25,24 @@ const getAllById = async (req, res, next) => {
             },
         };
     }
-    
-    let totalSender = await ExchangeMoneyDB.count({
-        sender_id: q.userId, data
-    });
-    let totalRec = await ExchangeMoneyDB.count({
-        receiver_id: q.userId, data
-    });
 
-    let respSender = await ExchangeMoneyDB.find({ sender_id: q.userId, data }).limit(limit ? limit : 20)
+    filterSender = {
+        sender_account_number: q.accountNumber,data
+    }
+    filterRec = {
+        receiver_account_number: q.accountNumber,data
+    }
+    if (q.isInside){
+        filterSender['is_inside'] = q.isInside
+        filterRec['is_inside'] = q.isInside
+    }
+    
+    let totalSender = await ExchangeMoneyDB.count(filterSender);
+    let totalRec = await ExchangeMoneyDB.count(filterRec);
+
+    let respSender = await ExchangeMoneyDB.find(filterSender).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
-    let respRec = await ExchangeMoneyDB.find({ receiver_id: q.userId, data }).limit(limit ? limit : 20)
+    let respRec = await ExchangeMoneyDB.find(filterRec).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
     
 
@@ -62,8 +69,12 @@ const depositMoney = async (req, res, next) => {
         let resp1 = await ExchangeMoneyDB.create({
             sender_id: curUser.user_id,
             receiver_id: curUser.user_id,
+            is_inside: true,
+            receiver_account_number: curUser.account_number,
+            sender_account_number: curUser.account_number,
             money: money,
-            fee_type: feeType
+            fee_type: feeType,
+            message,
         });
         let resp2 = await BankAccount.findOneAndUpdate({ account_number: accountNumber }, { balance: curUser.balance + money });
         if (resp1 && resp2) {
@@ -88,7 +99,11 @@ const depositMoney = async (req, res, next) => {
                 sender_id: curUser.user_id,
                 receiver_id: curUser.user_id,
                 money: money,
-                fee_type: feeType
+                fee_type: feeType,
+                is_inside: true,
+                receiver_account_number: curUser.account_number,
+                sender_account_number: curUser.account_number,
+                message,
             });
             let resp2 = await BankAccount.findOneAndUpdate({ account_number: curAccountNumber }, { balance: newBalance });
             if (resp1 && resp2) {

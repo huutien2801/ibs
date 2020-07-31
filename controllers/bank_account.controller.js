@@ -79,7 +79,7 @@ const transferMoney = async (req, res, next) => {
         })
     }
 
-    let handle = await handleTransfer(curUser.user_id, recUser.user_id, amount, mess, type, curUser.balance, recUser.balance);
+    let handle = await handleTransfer(curUser.user_id, recUser.user_id, amount, mess, type, curUser.balance, recUser.balance, curUser.account_number, recUser.account_number, true);
     if(handle.status == "OK"){
         return res.status(200).json({
             message: handle.message
@@ -92,7 +92,7 @@ const transferMoney = async (req, res, next) => {
 }
 
 //Handle xử lý chuyển khoản
-const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBalance, recBalance) => {
+const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBalance, recBalance, senderAc, receiveAc, isInside) => {
     let curAmountBef = 0; //Tính số tiền sau khi chuyển người gửi
     let recAmountBef = 0;
     if(type = "PAY"){
@@ -112,7 +112,10 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
                 receiver_id: receiverId,
                 money: amount,
                 message: mess,
-                fee_type: feeType
+                fee_type: feeType,
+                receiver_account_number: receiveAc,
+                sender_account_number: senderAc,
+                is_inside: isInside
             })
 
             return ({
