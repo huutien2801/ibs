@@ -16,21 +16,24 @@ const getAllById = async (req, res, next) => {
     let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
-
-    let data = {};
+   
+    let filterSender = {
+        sender_account_number: q.accountNumber
+    }
+    let filterRec = {
+        receiver_account_number: q.accountNumber
+    }
     if (startDate && endDate) {
-        data = {
-            $where: function () {
+        filterSender = {
+            sender_account_number: q.accountNumber, $where: function () {
                 return this.updated_date > startDate && this.updated_date < endDate;
             },
-        };
-    }
-
-    filterSender = {
-        sender_account_number: q.accountNumber,data
-    }
-    filterRec = {
-        receiver_account_number: q.accountNumber,data
+        }
+        filterRec = {
+            receiver_account_number: q.accountNumber, $where: function () {
+                return this.updated_date > startDate && this.updated_date < endDate;
+            },
+        }
     }
     if (q.isInside){
         filterSender['is_inside'] = q.isInside
@@ -45,7 +48,7 @@ const getAllById = async (req, res, next) => {
     let respRec = await ExchangeMoneyDB.find(filterRec).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
     
-
+    let data = {}
     if (respSender && respRec) {
         data["sender"] = respSender;
         data["receive"] = respRec;
