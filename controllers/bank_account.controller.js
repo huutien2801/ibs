@@ -2,7 +2,9 @@ const BankAccountDB = require('../models/bank_account.model');
 const RatioDB = require('../models/ratio.model');
 const ExchangeMoneyDB = require('../models/exchange_money.model');
 const UserRoleDB = require('../models/user_role.model');
-const {generateAccountNumber, generatePIN, FEE_TRANSFER, STANDARD_ACCOUNT, DEPOSIT_ACCOUNT} = require('../utils/util')
+const TransferMoneyTempDB = require('../models/transfer_money_temp.model');
+const OTPDB = require('../models/otp.model');
+const {generateAccountNumber, generatePIN, generateOTP, sendOTPMail, FEE_TRANSFER, STANDARD_ACCOUNT, DEPOSIT_ACCOUNT} = require('../utils/util')
 
 require('dotenv').config({
     path: './config/config.env',
@@ -95,32 +97,74 @@ const createBankAccount = async(req, res, next) => {
 //nếu type là PAY thì tự trả, BEPAY là bên kia trả
 //Truyền vô body receiveAccount, amount, mess, type
 const transferMoney = async (req, res, next) => {
-    const {receiveAccount, amount, mess, type} = req.body;
-
-    let curUser = await BankAccountDB.findOne({user_id: req.user.user_id, type:STANDARD_ACCOUNT}); // Note lại để test
-    if (curUser == null) {
+    const {receiverAccountNumber, amount, message, feeType} = req.body;
+    let currentUserRole = await UserRoleDB.findOne({user_id: req.user.user_id});
+    let otpCode = generateOTP();
+    let resp = await sendOTPMail(currentUserRole.email, currentUserRole.full_name, otpCode);
+    if (resp.status == "OK") {
+        await OTPDB.create({
+            email: currentUserRole.email,
+            otp: otpCode
+        })
+    } else {
         return res.status(400).json({
-            message: "Can't find user."
+            message: "Error when sending email"
         })
     }
-    let recUser = await BankAccountDB.findOne({account_number: receiveAccount, type: STANDARD_ACCOUNT});
-    if (recUser == null){
-        return res.status(400).json({
-            message: "Can't find user receive."
-        })
-    }
-
-    let handle = await handleTransfer(curUser.user_id, recUser.user_id, amount, mess, type, curUser.balance, recUser.balance, curUser.account_number, recUser.account_number, true);
-    if(handle.status == "OK"){
-        return res.status(200).json({
-            message: handle.message
-        });
-    }
-    
-    return res.status(400).json({
-        message:"Can't transfer money at this time."
+    let temp = await TransferMoneyTempDB.create({
+        sender_user_id: currentUserRole.user_id,
+        receiver_account_number: receiverAccountNumber,
+        amount,
+        message,
+        fee_type: feeType
     })
+    if (!temp)
+    {
+        return res.status(400).json({
+            message: "Error when transfering money"
+        })
+    }
+    else {
+        return res.status(200).json({
+            message: "OTP sent",
+            status: "SENT"
+        })
+    }
 }
+
+const confirmOTPTransferMoney = async(req, res, next) => {
+    const {OTP} = req.body;
+    let currentUserRole = await UserRoleDB.findOne({user_id: req.user.user_id});
+    filter = {}
+    filter['email'] = currentUserRole.email;
+
+    let otp = await OTPDB.find(filter).limit(1).sort({createdAt:-1})
+    if (!otp){
+        return res.status(400).json({
+            status: "ERROR",
+            message: "Your OTP code is expired."
+        })
+    }
+    if (otp[0].otp == OTP){
+        let data = await TransferMoneyTempDB.findOne({sender_user_id: currentUserRole.user_id});
+        let currentBankAccount = await BankAccountDB.findOne({user_id: currentUserRole.user_id});
+        let receiverBankAccount = await BankAccountDB.findOne({account_number: data.receiver_account_number});
+        let handle = await handleTransfer(currentUserRole.user_id, receiverBankAccount.user_id, data.amount, data.message, data.fee_type, currentBankAccount.balance, receiverBankAccount.balance, currentBankAccount.account_number,  data.receiver_account_number, true);
+        if(handle.status == "OK"){
+            let deleteTransferMoney = await TransferMoneyTempDB.deleteOne({sender_user_id: currentUserRole.user_id});
+            return res.status(200).json({
+                message: "Transfer money success"
+        });
+        }
+        return res.status(400).json({
+            status: "ERROR",
+            message: "OTP did't match"
+        })
+    }
+}
+
+
+
 
 //Handle xử lý chuyển khoản
 const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBalance, recBalance, senderAc, receiveAc, isInside) => {
@@ -173,6 +217,7 @@ module.exports = {
     transferMoney,
     handleTransfer,
     getBankAccountStandard,
-    getBankAccountDeposit
+    getBankAccountDeposit,
+    confirmOTPTransferMoney
 };
     
