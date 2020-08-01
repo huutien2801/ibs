@@ -6,6 +6,7 @@ const ErrorCode = require('../config/ErrorCode');
 const md5 = require('md5');
 const NodeRSA = require('node-rsa');
 const axios = require('axios');
+const { Error } = require('mongoose');
 //Hai API để call sang service khác lấy thông tin khách hàng
 const getAccountInfoSAPHASANBANK = async ( req,res,next) => {
     axios({
@@ -74,15 +75,33 @@ const depositMoneyQLBank = async ( req,res,next) => {
     },
   })
   .then(function(response){
-    let receiver = await BankAccount.findOne({account_number: req.query.accountNumber});
-    let newBalance = receiver.balance - req.body.amount;
-    let update = await BankAccount.findOneAndUpdate({account_number: req.query.accountNumber}, {balance: newBalance});
-    if (update) {
-      return res.status(200).json({
-        message: "Transfer succeeded",
-        data: response.data
-      })
-    }
+    let receiver = BankAccount.findOne({account_number: req.query.accountNumber}, function(err, response1) {
+      if (err)
+      {
+        return res.status(400).json({
+          message: "Transfer failed" + err
+        })
+      }
+      else {
+        let newBalance = parseInt(response1.balance) - parseInt(req.body.amount);
+        console.log(req.body.amount);
+        console.log(newBalance);
+        let update = BankAccount.findOneAndUpdate({account_number: req.query.accountNumber}, {balance: parseInt(newBalance)}, function(err, response2) {
+          if (err)
+          {
+            return res.status(400).json({
+              message: "Transfer failed 2" + err
+            })
+          }
+          else {
+            return res.status(200).json({
+              message: "Transfer succeeded",
+              data: response.data
+            })
+          }
+        });
+      }
+    });
   }).catch(function(error){
     return res.status(400).json({
       message: "Transfer failed" + error
