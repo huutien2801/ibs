@@ -2,7 +2,8 @@ const ExchangeMoneyDB = require('../models/exchange_money.model')
 const BankAccount = require('../models/bank_account.model')
 const UserRole = require('../models/user_role.model')
 const Remind = require('../models/remind.model');
-const { EXCHANGE_TYPE_ALL, EXCHANGE_TYPE_SEND, EXCHANGE_TYPE_RECEIVE, EXCHANGE_TYPE_DEBT } = require('../utils/util')
+const { EXCHANGE_TYPE_ALL, EXCHANGE_TYPE_SEND, EXCHANGE_TYPE_RECEIVE, EXCHANGE_TYPE_DEBT } = require('../utils/util');
+const { first } = require('lodash');
 
 require('dotenv').config({
     path: './config/config.env',
@@ -128,25 +129,38 @@ const getRecMoney = async (req, res, next) => {
     
     let totalRec = await ExchangeMoneyDB.count(filterRec);
 
-    let respRec = await ExchangeMoneyDB.find(filterRec).limit(limit ? limit : 20)
+    let respRec = await ExchangeMoneyDB.find(filterRec).sort({send_date: -1}).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
     
     let sum = 0
     respRec.forEach( resp => {
         sum += resp.money
     })
-    
+
+    let today = new Date();
+    let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    let sumMonth = await ExchangeMoneyDB.aggregate([
+        { $match: { created_time_second: {$gte: firstDay.getTime(), $lte: today.getTime()} } },
+        { $group: { _id: null, amount: { $sum: "$money" } } }
+    ])
+
+    let sumTotal = await ExchangeMoneyDB.aggregate([
+        { $group: { _id: null, amount: { $sum: "$money" } } }
+    ])
+
     if (respRec) {
         return res.status(200).json({
-            message: "Get all history sender successfully",
+            message: "Get all history receiver successfully",
             data: respRec,
             total: totalRec,
             sum: sum,
+            sumMonth: sumMonth[0].amount,
+            sumTotal: sumTotal[0].amount,
         })
     }
 
     return res.status(400).json({
-        message: "Can't get history sender at this time."
+        message: "Can't get history receiver at this time."
     })
 }
 
@@ -195,7 +209,7 @@ const getSenMoney = async (req, res, next) => {
     
     let totalSen = await ExchangeMoneyDB.count(filterSen);
 
-    let respSen = await ExchangeMoneyDB.find(filterSen).limit(limit ? limit : 20)
+    let respSen = await ExchangeMoneyDB.find(filterSen).sort({send_date: -1}).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
     
     let sum = 0
@@ -203,12 +217,25 @@ const getSenMoney = async (req, res, next) => {
         sum += resp.money
     })
     
-    if (respSen) {
+    let today = new Date();
+    let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    let sumMonth = await ExchangeMoneyDB.aggregate([
+        { $match: { created_time_second: {$gte: firstDay.getTime(), $lte: today.getTime()} } },
+        { $group: { _id: null, amount: { $sum: "$money" } } }
+    ])
+
+    let sumTotal = await ExchangeMoneyDB.aggregate([
+        { $group: { _id: null, amount: { $sum: "$money" } } }
+    ])
+
+    if (respRec) {
         return res.status(200).json({
             message: "Get all history sender successfully",
             data: respSen,
             total: totalSen,
             sum: sum,
+            sumMonth: sumMonth[0].amount,
+            sumTotal: sumTotal[0].amount,
         })
     }
 
