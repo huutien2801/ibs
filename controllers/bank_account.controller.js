@@ -105,6 +105,8 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
 
     let resp = await BankAccountDB.updateOne({user_id: senderId, type: STANDARD_ACCOUNT}, {balance: curAmountBef});
     let respRec = await BankAccountDB.updateOne({user_id: receiverId, type: STANDARD_ACCOUNT}, {balance: recAmountBef });
+    let senderUserRole = await UserRoleDB.find({ user_id: senderId});
+    let receiverUserRole = await UserRoleDB.find({ user_id: receiverId});
     if (resp && respRec){
             //create log transfer money
             ExchangeMoneyDB.create({
@@ -115,6 +117,8 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
                 fee_type: feeType,
                 receiver_account_number: receiveAc,
                 sender_account_number: senderAc,
+                receiver_full_name: receiverUserRole.full_name,
+                sender_full_name: senderUserRole.full_name,
                 is_inside: isInside
             })
 
