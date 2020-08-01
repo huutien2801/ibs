@@ -176,21 +176,21 @@ const getSenMoney = async (req, res, next) => {
     if (q.start && !q.end){
         let startDate = Date.parse(q.start);
         //let endDate = Date.parse(q.end);
-        filterSender = {
+        filterSen = {
             created_time_second: {$gt: startDate}
         }
     }
     if (q.end && !q.start){
         //let startDate = Date.parse(q.start);
         let endDate = Date.parse(q.end);
-        filterSender = {
+        filterSen = {
             created_time_second: {$lt: endDate}
         }
     }
     if (q.start && q.end) {
         let startDate = Date.parse(q.start);
         let endDate = Date.parse(q.end);
-        filterRec = {
+        filterSen = {
             created_time_second: {$gt: startDate, $lt: endDate}
         }
     }
@@ -203,7 +203,7 @@ const getSenMoney = async (req, res, next) => {
         filterSen['is_inside'] = q.isInside
     }
     if (q.partnerCode){
-        filterRec['partner_code'] = q.partnerCode
+        filterSen['partner_code'] = q.partnerCode
     }
     //filterRec['$sum'] = "$money";
     
@@ -228,7 +228,7 @@ const getSenMoney = async (req, res, next) => {
         { $group: { _id: null, amount: { $sum: "$money" } } }
     ])
 
-    if (respRec) {
+    if (respSen) {
         return res.status(200).json({
             message: "Get all history sender successfully",
             data: respSen,
