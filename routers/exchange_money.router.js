@@ -4,7 +4,7 @@ const { protect } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router.get('/history', getAllById);
+router.get('/history', protect, getAllById);
 router.post('/deposit', protect, depositMoney);
 router.get('/get-userlogs', protect, getUserLogs);
 router.get('/get-history-admin', protect, getAllHistoryAdmin);

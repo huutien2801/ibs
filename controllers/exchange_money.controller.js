@@ -17,23 +17,26 @@ const getAllById = async (req, res, next) => {
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
    
-    let filterSender = {
-        sender_account_number: q.accountNumber
-    }
-    let filterRec = {
-        receiver_account_number: q.accountNumber
-    }
+    let filterSender = {}
+    let filterRec = {}
     if (startDate && endDate) {
         filterSender = {
-            sender_account_number: q.accountNumber, $where: function () {
+            $where: function () {
                 return this.updated_date > startDate && this.updated_date < endDate;
             },
         }
         filterRec = {
-            receiver_account_number: q.accountNumber, $where: function () {
+            $where: function () {
                 return this.updated_date > startDate && this.updated_date < endDate;
             },
         }
+    }
+    if (q.accountNumber){
+        filterSender['sender_account_number'] = q.accountNumber
+        filterRec['receiver_account_number'] = q.accountNumber
+    } else {
+        filterSender['sender_id'] = req.user.user_id
+        filterRec['receiver_id'] = req.user.user_id
     }
     if (q.isInside){
         filterSender['is_inside'] = q.isInside
@@ -250,19 +253,21 @@ const getAllHistoryAdmin = async (req, res, next) => {
         };
     }
 
-    if (getTotal) {
-        data.partner_code = { $type: "string" };
-    } else {
-        data.partner_code = q.partnerCode;
+    if (q.partnerCode) {
+        data['partner_code'] = q.partnerCode;
     }
-
-    data.total = { $sum: "$money" };
+    data['is_inside'] = false;
+    data['$sum'] = "$money";
 
     let resp = await ExchangeMoneyDB.find(data)
         .limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
 
     if (resp) {
+        if (getTotal){
+            let resCount = await ExchangeMoneyDB.count(data)
+            resp.total = resCount
+        }
         return res.status(200).json({
             message: "Query history successful",
             data: resp,
