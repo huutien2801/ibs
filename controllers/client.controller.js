@@ -49,24 +49,24 @@ const getAccountInfoQLBank = async ( req,res,next) => {
     })
 }
 
-const depositMoneyQLBank = async ( req,res,next) => {
-  let ts = Date.now();
-  let data = {
-    accountId: req..accountId,
-    amount: req..amount
-  }
-  let hashStr = md5(ts + data + md5("dungnoiaihet"));
-  axios({
-    method: 'post',
-    url: 'https://qlbank1.herokuapp.com/api/external/transaction',
-    data,
-    headers: {
-        ts,
-        partnerCode: "3TBank",
-        hashedSign: hashStr,
-    }
-  })
-}
+// const depositMoneyQLBank = async ( req,res,next) => {
+//   let ts = Date.now();
+//   let data = {
+//     accountId: req..accountId,
+//     amount: req..amount
+//   }
+//   let hashStr = md5(ts + data + md5("dungnoiaihet"));
+//   axios({
+//     method: 'post',
+//     url: 'https://qlbank1.herokuapp.com/api/external/transaction',
+//     data,
+//     headers: {
+//         ts,
+//         partnerCode: "3TBank",
+//         hashedSign: hashStr,
+//     }
+//   })
+// }
 
 module.exports = {
   getAccountInfoQLBank
