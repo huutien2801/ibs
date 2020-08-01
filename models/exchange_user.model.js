@@ -24,6 +24,17 @@ const ExchangeUserSchema = mongoose.Schema({
         type:String,
         required: true
     },
+    receiver_nick_name: {
+        type:String,
+        required: true
+    },
+    is_inside: {
+        type: Boolean,
+        required: true
+    },
+    partner_code: {
+        type: String,
+    },
     created_date: {
         type: Date,
         default: Date.now
