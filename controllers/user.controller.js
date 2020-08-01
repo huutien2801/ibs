@@ -101,7 +101,7 @@ const getInfoUser = async (req, res, next) => {
 const rechargeMoneyInAccount = async (req, res, next) => {
 
     //If parnertCode is invalid
-    let partner_code = "SAPHASANBank"//req.headers.partnercode
+    let partner_code = req.headers.partnercode
     //Call to DB to check partner 
     if (!partner_code) {
         return res.status(ErrorCode.INVALID_PARAMETER.code).json({
@@ -117,14 +117,14 @@ const rechargeMoneyInAccount = async (req, res, next) => {
         });
     }
 
-    // if (!req.headers.ts) {
-    //     return res.status(400).json({
-    //         message: 'Lack of time request'
-    //     });
-    // }
+    if (!req.headers.ts) {
+        return res.status(400).json({
+            message: 'Lack of time request'
+        });
+    }
 
     //Convert date into secs to compare
-    // let secondRequestedDate = req.headers.ts
+    let secondRequestedDate = req.headers.ts
 
     let currentDate = new Date()
     let secondCurrentDate = currentDate.getTime()
@@ -133,17 +133,17 @@ const rechargeMoneyInAccount = async (req, res, next) => {
     //Return false
     //Else we'll check if delta time between requested date and current date is less 60 seconds.
     //Your request will be approved
-    // if (secondRequestedDate > secondCurrentDate) {
-    //     return res.status(400).json({
-    //         message: 'Your request time is greater than current time'
-    //     });
-    // } else {
-    //     if (Math.abs(secondCurrentDate - secondRequestedDate) > 600000) {
-    //         return res.status(500).json({
-    //             message: 'Request time out'
-    //         });
-    //     }
-    // }
+    if (secondRequestedDate > secondCurrentDate) {
+        return res.status(400).json({
+            message: 'Your request time is greater than current time'
+        });
+    } else {
+        if (Math.abs(secondCurrentDate - secondRequestedDate) > 600000) {
+            return res.status(500).json({
+                message: 'Request time out'
+            });
+        }
+    }
 
     let partnerLog = await PartnerLog.findOne({
         request_time: secondRequestedDate,
