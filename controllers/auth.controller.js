@@ -106,10 +106,14 @@ const login = async (req, res, next) => {
     return next(ErrorCode.REQUEST_TIMEOUT);
   }
 
-  if (!user.is_active)
+  if(user.role_code == "CUSTOMER")
   {
-    return next(ErrorCode.INACTIVE_ACCOUNT);
+    if (!user.is_active)
+    {
+      return next(ErrorCode.INACTIVE_ACCOUNT);
+    }
   }
+
   // Check if password matches
   const isMatch = await user.matchPassword(password);
 
