@@ -12,25 +12,24 @@ require('dotenv').config({
 //Truyền query q={acountNumber, isInside}
 const getAllById = async (req, res, next) => {
     let q = JSON.parse(req.query.q);
-    let startDate = req.query.start;
-    let endDate = req.query.end;
+    // let startDate = req.query.start;
+    // let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
    
     let filterSender = {}
     let filterRec = {}
-    if (startDate && endDate) {
-        filterSender = {
-            $where: function () {
-                return this.updated_date > startDate && this.updated_date < endDate;
-            },
-        }
+    if (q.start && q.end) {
+        let startDate = Date.parse(q.start);
+        let endDate = Date.parse(q.end);
         filterRec = {
-            $where: function () {
-                return this.updated_date > startDate && this.updated_date < endDate;
-            },
+            created_time_second: {$gt: startDate, $lt: endDate}
+        }
+        filterSender = {
+            created_time_second: {$gt: startDate, $lt: endDate}
         }
     }
+
     if (q.accountNumber){
         filterSender['sender_account_number'] = q.accountNumber
         filterRec['receiver_account_number'] = q.accountNumber
@@ -69,18 +68,15 @@ const getAllById = async (req, res, next) => {
 
 const getRecMoney = async (req, res, next) => {
     let q = JSON.parse(req.query.q);
-    let startDate = req.query.start;
-    let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
    
     let filterRec = {}
-    if (startDate && endDate) {
+    if (q.start && q.end) {
+        let startDate = Date.parse(q.start);
+        let endDate = Date.parse(q.end);
         filterRec = {
-            $where: function () {
-                return this.updated_date > startDate && this.updated_date < endDate;
-            },
-
+            created_time_second: {$gt: startDate, $lt: endDate}
         }
     }
     if (q.accountNumber){
@@ -123,18 +119,17 @@ const getRecMoney = async (req, res, next) => {
 
 const getSenMoney = async (req, res, next) => {
     let q = JSON.parse(req.query.q);
-    let startDate = req.query.start;
-    let endDate = req.query.end;
+    // let startDate = req.query.start;
+    // let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
    
     let filterSen = {}
-    if (startDate && endDate) {
-        filterSen = {
-            $where: function () {
-                return this.updated_date > startDate && this.updated_date < endDate;
-            },
-
+    if (q.start && q.end) {
+        let startDate = Date.parse(q.start);
+        let endDate = Date.parse(q.end);
+        filterRec = {
+            created_time_second: {$gt: startDate, $lt: endDate}
         }
     }
     if (q.accountNumber){
@@ -179,6 +174,7 @@ const depositMoney = async (req, res, next) => {
     if (accountNumber != null) {
         const curUser = await BankAccount.findOne({ account_number: accountNumber });
         const tempCurUser = await UserRole.findOne({ user_id: curUser.user_id });
+        let now = new Date();
         let resp1 = await ExchangeMoneyDB.create({
             sender_id: curUser.user_id,
             receiver_id: curUser.user_id,
@@ -190,6 +186,7 @@ const depositMoney = async (req, res, next) => {
             money: money,
             fee_type: feeType,
             message,
+            created_time_second: now.getTime()
         });
         let resp2 = await BankAccount.findOneAndUpdate({ account_number: accountNumber }, { balance: curUser.balance + money });
         if (resp1 && resp2) {
@@ -210,6 +207,7 @@ const depositMoney = async (req, res, next) => {
             let curAccountNumber = curBankAccount.account_number;
             let curBalance = curBankAccount.balance;
             let newBalance = money + curBalance;
+            let now = new Date();
             let resp1 = await ExchangeMoneyDB.create({
                 sender_id: curUser.user_id,
                 receiver_id: curUser.user_id,
@@ -221,6 +219,7 @@ const depositMoney = async (req, res, next) => {
                 receiver_full_name: curUser.full_name,
                 sender_full_name: curUser.full_name,
                 message,
+                created_time_second: now.getTime()
             });
             let resp2 = await BankAccount.findOneAndUpdate({ account_number: curAccountNumber }, { balance: newBalance });
             if (resp1 && resp2) {
