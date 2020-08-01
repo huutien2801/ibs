@@ -8,6 +8,37 @@ require('dotenv').config({
     path: './config/config.env',
 });
 
+const getBankAccountStandard = async(req, res, next) => {
+    let bankAccount = await BankAccountDB.findOne({user_id: req.user.user_id, type: STANDARD_ACCOUNT})
+    if (bankAccount){
+        return res.status(200).json({
+            message: "Get bank standard account successful.",
+            data: bankAccount
+        })
+    }
+
+    return res.status(400).json({
+        message: "Get bank standard account fail."
+    })
+}
+
+const getBankAccountDeposit = async(req, res, next) => {
+    let offset = req.query.offset;
+    let limit = req.query.limit;
+
+    let bankAccount = await BankAccountDB.find({user_id: req.user.user_id, type: DEPOSIT_ACCOUNT}).limit(limit ? limit : 20).skip(offset ? offset : 0)
+    if (bankAccount){
+        return res.status(200).json({
+            message: "Get bank deposit account successful.",
+            data: bankAccount
+        })
+    }
+
+    return res.status(400).json({
+        message: "Get bank deposit account fail."
+    })
+}
+
 //API create bank account of user POST
 //truyền vào body type, balance, ratioMonth, deposit
 const createBankAccount = async(req, res, next) => {
@@ -140,6 +171,8 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
 module.exports = {
     createBankAccount,
     transferMoney,
-    handleTransfer
+    handleTransfer,
+    getBankAccountStandard,
+    getBankAccountDeposit
 };
     
