@@ -154,8 +154,17 @@ const deleteInfoUser = async (req, res, next) => {
 
 const getInfoUserBy = async (req, res, next) => {
     let q = JSON.parse(req.query.q);
-    var curUser = await BankAccount.findOne({ account_number: q.account_number })
-    UserRole.find({ $or: [{ user_id: curUser.user_id }, { username: q.username }] }, { password: 0 }, function (err, user) {
+    let filter = {}
+    if (q.username){
+        filter['username'] = q.username;
+    } else {
+        curBank = await BankAccount.findOne({account_number: q.account_number});
+        if (curBank){
+            filter['user_id'] = curBank.user_id;
+        }
+    }
+
+    UserRole.find( filter , { password: 0 }, function (err, user) {
         if (user) {
             return res.status(200).json({
                 user
@@ -167,6 +176,8 @@ const getInfoUserBy = async (req, res, next) => {
             })
         }
     })
+
+    
 }
 
 //API create user use bank POST
