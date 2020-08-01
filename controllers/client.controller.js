@@ -24,7 +24,7 @@ const getAccountInfoSAPHASANBANK = async ( req,res,next) => {
 const getAccountInfoQLBank = async ( req,res,next) => {
     let ts = Date.now();
     let data = {
-      accountNumber: "12345"
+      accountNumber: req.query.accountNumber
     }
     let hashStr = md5(ts + data + md5("dungnoiaihet"));
     axios({
@@ -37,26 +37,36 @@ const getAccountInfoQLBank = async ( req,res,next) => {
           hashedSign: hashStr,
       }
     })
+    .then(function(response){
+      return res.status(200).json({
+        message: "Get succeeded",
+        data: response.data
+      })
+    }).catch(function(error){
+      return res.status(400).json({
+        message: "Get failed" + error
+      })
+    })
 }
 
-// const depositMoneyQLBank = async ( req,res,next) => {
-//   let ts = Date.now();
-//   let data = {
-//     accountId: req..accountId,
-//     amount: req..amount
-//   }
-//   let hashStr = md5(ts + data + md5("dungnoiaihet"));
-//   axios({
-//     method: 'post',
-//     url: 'https://qlbank1.herokuapp.com/api/external/transaction',
-//     data,
-//     headers: {
-//         ts,
-//         partnerCode: "3TBank",
-//         hashedSign: hashStr,
-//     }
-//   })
-// }
+const depositMoneyQLBank = async ( req,res,next) => {
+  let ts = Date.now();
+  let data = {
+    accountId: req..accountId,
+    amount: req..amount
+  }
+  let hashStr = md5(ts + data + md5("dungnoiaihet"));
+  axios({
+    method: 'post',
+    url: 'https://qlbank1.herokuapp.com/api/external/transaction',
+    data,
+    headers: {
+        ts,
+        partnerCode: "3TBank",
+        hashedSign: hashStr,
+    }
+  })
+}
 
 module.exports = {
   getAccountInfoQLBank

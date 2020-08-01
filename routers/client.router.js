@@ -4,6 +4,6 @@ const {getAccountInfoQLBank} = require('../controllers/client.controller');
 const router = express.Router();
 
 
-router.post('/get-info', getAccountInfoQLBank);
+router.get('/get-info', getAccountInfoQLBank);
 
 module.exports = router;

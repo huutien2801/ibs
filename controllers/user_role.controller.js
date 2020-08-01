@@ -58,7 +58,7 @@ const getInfoUser = async (req, res, next) => {
     let skip = parseInt(req.query.offset);
     let total = await UserRole.count({ role_code: q.roleCode });
     let filter= {}
-    filter["roleCode"] = q.roleCode;
+    filter["role_code"] = q.roleCode;
     if (q.email)
     {
         filter["email"] = q.email;
