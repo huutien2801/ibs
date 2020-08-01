@@ -19,6 +19,26 @@ const getAllById = async (req, res, next) => {
    
     let filterSender = {}
     let filterRec = {}
+    if (q.start && !q.end){
+        let startDate = Date.parse(q.start);
+        //let endDate = Date.parse(q.end);
+        filterRec = {
+            created_time_second: {$gt: startDate}
+        }
+        filterSender = {
+            created_time_second: {$gt: startDate}
+        }
+    }
+    if (q.end && !q.start){
+        //let startDate = Date.parse(q.start);
+        let endDate = Date.parse(q.end);
+        filterRec = {
+            created_time_second: {$lt: endDate}
+        }
+        filterSender = {
+            created_time_second: {$lt: endDate}
+        }
+    }
     if (q.start && q.end) {
         let startDate = Date.parse(q.start);
         let endDate = Date.parse(q.end);
@@ -72,6 +92,20 @@ const getRecMoney = async (req, res, next) => {
     let skip = parseInt(req.query.offset);
    
     let filterRec = {}
+    if (q.start && !q.end){
+        let startDate = Date.parse(q.start);
+        //let endDate = Date.parse(q.end);
+        filterRec = {
+            created_time_second: {$gt: startDate}
+        }
+    }
+    if (q.end && !q.start){
+        //let startDate = Date.parse(q.start);
+        let endDate = Date.parse(q.end);
+        filterRec = {
+            created_time_second: {$lt: endDate}
+        }
+    }
     if (q.start && q.end) {
         let startDate = Date.parse(q.start);
         let endDate = Date.parse(q.end);
@@ -84,7 +118,7 @@ const getRecMoney = async (req, res, next) => {
     } else {
         filterRec['receiver_id'] = req.user.user_id
     }
-    if (q.isInside){
+    if (q.isInside != undefined){
         filterRec['is_inside'] = q.isInside
     }
     if (q.partnerCode){
@@ -125,6 +159,20 @@ const getSenMoney = async (req, res, next) => {
     let skip = parseInt(req.query.offset);
    
     let filterSen = {}
+    if (q.start && !q.end){
+        let startDate = Date.parse(q.start);
+        //let endDate = Date.parse(q.end);
+        filterSender = {
+            created_time_second: {$gt: startDate}
+        }
+    }
+    if (q.end && !q.start){
+        //let startDate = Date.parse(q.start);
+        let endDate = Date.parse(q.end);
+        filterSender = {
+            created_time_second: {$lt: endDate}
+        }
+    }
     if (q.start && q.end) {
         let startDate = Date.parse(q.start);
         let endDate = Date.parse(q.end);
@@ -137,7 +185,7 @@ const getSenMoney = async (req, res, next) => {
     } else {
         filterSen['sender_id'] = req.user.user_id
     }
-    if (q.isInside){
+    if (q.isInside != undefined){
         filterSen['is_inside'] = q.isInside
     }
     if (q.partnerCode){
