@@ -109,6 +109,7 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
     let receiverUserRole = await UserRoleDB.find({ user_id: receiverId});
     if (resp && respRec){
             //create log transfer money
+            let now = new Date();
             ExchangeMoneyDB.create({
                 sender_id: senderId,
                 receiver_id: receiverId,
@@ -119,7 +120,8 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
                 sender_account_number: senderAc,
                 receiver_full_name: receiverUserRole.full_name,
                 sender_full_name: senderUserRole.full_name,
-                is_inside: isInside
+                is_inside: isInside,
+                created_time_second: now.getTime(),
             })
 
             return ({

@@ -57,6 +57,9 @@ const ExchangeMoneySchema = mongoose.Schema({
     updated_date: {
         type: Date,
         default: Date.now
+    },
+    created_time_second: {
+        type: Number,
     }
 });
 
