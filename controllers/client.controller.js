@@ -52,11 +52,11 @@ const getAccountInfoQLBank = async ( req,res,next) => {
 const depositMoneyQLBank = async ( req,res,next) => {
   let ts = Date.now();
   let data = {
-    sentUserId: "123456789",
-sentUserName: "Lam Huu Tien",
-accountNumber: "3",
-amount: 50000,
-content: "Cam on"
+    sentUserId: req.query.accountNumber, // của ng gửi
+    sentUserName: req.query.fullName, // của ng gửi
+    accountNumber: req.body.receiverAccountNumber, // account number của ng nhận
+    amount: req.body.amount,
+    content: req.body.message
   }
   let hashStr = md5(ts + data + md5("dungnoiaihet"));
   //const keyPublic = new NodeRSA("-----BEGIN PUBLIC KEY-----MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCyceITLtFoy4KzMgmr6NEnvk1VBH7pRuyyg7IkXc3kBspKs9CIErm2eJtEtduIPQK+3AgiQW+fjL1dDMQr7ENZiGzWhEPoSbU348mjg1fxFDztFB4QiqAd7UUvj1kK2/UT+D0C6Sgc0O69C9lRGahPSAX+7ZArGIodtfuOKPenEwIDAQAB-----END PUBLIC KEY-----")
@@ -74,10 +74,15 @@ content: "Cam on"
     },
   })
   .then(function(response){
-    return res.status(200).json({
-      message: "Transfer succeeded",
-      data: response.data
-    })
+    let receiver = await BankAccount.findOne({account_number: req.query.accountNumber});
+    let newBalance = receiver.balance - req.body.amount;
+    let update = await BankAccount.findOneAndUpdate({account_number: req.query.accountNumber}, {balance: newBalance});
+    if (update) {
+      return res.status(200).json({
+        message: "Transfer succeeded",
+        data: response.data
+      })
+    }
   }).catch(function(error){
     return res.status(400).json({
       message: "Transfer failed" + error
