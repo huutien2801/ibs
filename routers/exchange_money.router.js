@@ -5,7 +5,7 @@ const { protect } = require('../middlewares/auth.middleware');
 const router = express.Router();
 
 router.get('/history', protect, getAllById);
-router.get('/receiver', protect, getRecMoney);
+router.get('/receiver', getRecMoney);
 router.get('/sender', protect, getSenMoney)
 router.post('/deposit', protect, depositMoney);
 router.get('/get-userlogs', protect, getUserLogs);

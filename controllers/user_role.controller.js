@@ -154,18 +154,33 @@ const deleteInfoUser = async (req, res, next) => {
 
 const getInfoUserBy = async (req, res, next) => {
     let q = JSON.parse(req.query.q);
-    var curUser = await BankAccount.findOne({ account_number: q.account_number })
-    UserRole.find({ $or: [{ user_id: curUser.user_id }, { username: q.username }] }, { password: 0 }, function (err, user) {
+    let filter = {}
+    if (q.username){
+        filter['username'] = q.username;
+    } else {
+        curBank = await BankAccount.findOne({account_number: q.account_number});
+        if (curBank){
+            filter['user_id'] = curBank.user_id;
+        }
+    }
+
+    if (!filter.username && !filter.user_id){
+        return res.status(400).json({
+            message: "Error, Can't find user infomation."
+        })
+    }
+
+    UserRole.find( filter , { password: 0 }, function (err, user) {
         if (user) {
             return res.status(200).json({
+                message: "Get user infomation successful.",
                 user
             })
         }
-        else {
-            return res.status(400).json({
-                message: "User not exists"
-            })
-        }
+ 
+        return res.status(400).json({
+            message: "User not exists"
+        })
     })
 }
 
