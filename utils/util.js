@@ -18,13 +18,13 @@ function generateOTP() {
 
 function sendOTPMail(email, fullname, otpCode) {
   var mailOptions = {
-    from: "3TBank",
+    from: "lathoai3107@gmail.com",
     to: email,
     subject: "Email xác nhận mã PIN",
-    text: "Kính gửi " + fullname +",\n\nBạn vừa giao dịch tại ngân hàng chúng tôi. Đây là mã xác nhận của bạn:\n" + otpCode.toString() + "\nNếu như bạn không thực hiện giao dịch này, bạn có thể bỏ qua email này.",
+    text: "Kính gửi " + fullname +",\n\nĐây là mã giao dịch của bạn:\n" + otpCode.toString() + "\nMã giao dịch sẽ hết hạn trong vòng 2 phút.\nNếu như bạn không thực hiện giao dịch này, bạn có thể bỏ qua email này.",
   };
   transporter.sendMail(mailOptions, (error, info) => {
-    if (error != "null") {
+    if (error) {
       return {status: "ERROR", message: "Can't sen't message at this time. " + error}
     }
   });
