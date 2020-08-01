@@ -17,7 +17,7 @@ const createOTPMail = async(req, res, next) => {
     else {
         filter['user_id'] = req.user.user_id
     }
-
+    console.log(filter)
     let user = await UserRoleDB.findOne(filter);
     if(!user){
         return res.status(400).json({
