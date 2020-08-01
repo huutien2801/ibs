@@ -62,8 +62,8 @@ const getInfoUser = async (req, res, next) => {
     }
 
     //Call to DB to get info username
-    let  accountId  = req.query.accountId
-    let account = await BankAccount.findOne({ user_id: accountId })
+    let  accountNumber  =  req.query.accountId
+    let account = await BankAccount.findOne({ account_number: accountNumber})
 
     if (!account) {
         return res.status(404).json({
@@ -72,7 +72,7 @@ const getInfoUser = async (req, res, next) => {
         });
     }
 
-    let user = await User.findOne({ user_id: account.user_id }).select({ 'password': 0});
+    let user = await UserRole.findOne({ user_id: account.user_id }).select({ 'password': 0});
 
     if (user) {
 
@@ -85,8 +85,8 @@ const getInfoUser = async (req, res, next) => {
         await PartnerLog.create(bodyPartnerLog)
         return res.status(200).json({
             data: {
-                account: accountId,
-                fullName: user.full_name
+                account_number: accountNumber,
+                full_name: user.full_name
             },
             message: "Get info account succeed."
         });
