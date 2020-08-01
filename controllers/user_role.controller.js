@@ -57,7 +57,13 @@ const getInfoUser = async (req, res, next) => {
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
     let total = await UserRole.count({ role_code: q.roleCode });
-    UserRole.find({ role_code: q.roleCode, email: q.email }, { username: 0, password: 0 }, function (err, users) {
+    let filter= {}
+    filter["roleCode"] = q.roleCode;
+    if (q.email)
+    {
+        filter["email"] = q.email;
+    }
+    UserRole.find( filter , { username: 0, password: 0 }, function (err, users) {
         console.log(users)
         if (users) {
             return res.status(200).json({
