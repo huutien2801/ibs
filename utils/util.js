@@ -18,10 +18,10 @@ function generateOTP() {
 
 function sendOTPMail(email, fullname, otpCode) {
   var mailOptions = {
-    from: "lathoai3107@gmail.com",
+    from: "3TBank",
     to: email,
-    subject: "Verify OTP email",
-    text: "Dear " + fullname +"\n\nYou have just placed an request at our bank. This is your verification code:\n" + otpCode.toString() + "\nIf you did not make this request, you can ignore this email.",
+    subject: "Email xác nhận mã PIN",
+    text: "Kính gửi " + fullname +",\n\nBạn vừa giao dịch tại ngân hàng chúng tôi. Đây là mã xác nhận của bạn:\n" + otpCode.toString() + "\nNếu như bạn không thực hiện giao dịch này, bạn có thể bỏ qua email này.",
   };
   transporter.sendMail(mailOptions, (error, info) => {
     if (error != "null") {

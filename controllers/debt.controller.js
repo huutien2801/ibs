@@ -1,8 +1,8 @@
 const RemindDB = require('../models/remind.model');
 const BankAccountDB = require('../models/bank_account.model');
 
-const {STANDARD_ACCOUNT, FEE_TRANSFER} = require('../utils/util')
-const {handleTransfer} = require('./bank_account.controller');
+const { STANDARD_ACCOUNT, FEE_TRANSFER } = require('../utils/util')
+const { handleTransfer } = require('./bank_account.controller');
 
 require('dotenv').config({
     path: './config/config.env',
@@ -10,11 +10,11 @@ require('dotenv').config({
 
 //Tạo nhắc nợ POST
 //Truyền vô body reminded, mess, debt
-const createRemind = async(req, res, next) => {
+const createRemind = async (req, res, next) => {
     const { reminded, mess, debt } = req.body
-    let currentAccount = await BankAccountDB.findOne({user_id: req.user.user_id, type: STANDARD_ACCOUNT})
+    let currentAccount = await BankAccountDB.findOne({ user_id: req.user.user_id, type: STANDARD_ACCOUNT })
 
-    if(currentAccount == null){
+    if (currentAccount == null) {
         return res.status(400).json({
             message: "Can't find bank account of this user"
         })
@@ -39,39 +39,33 @@ const createRemind = async(req, res, next) => {
 };
 
 //Lấy danh sách nhắc nợ do bản thân tạo GET
-const getReminder = async(req, res, next) => {   
+const getReminder = async (req, res, next) => {
     let startDate = req.query.start;
     let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
 
-  let data = {};
-  if (startDate && endDate) {
-    data = {
-      $where: function () {
-        return this.updated_date > startDate && this.updated_date < endDate;
-      },
-    };
-  }
-    let currentAccount = await BankAccountDB.findOne({user_id: req.user.user_id});
-    if(currentAccount == null){
+    let data = {};
+    if (startDate && endDate) {
+        data = {
+            $where: function () {
+                return this.updated_date > startDate && this.updated_date < endDate;
+            },
+        };
+    }
+    let currentAccount = await BankAccountDB.findOne({ user_id: req.user.user_id });
+    if (currentAccount == null) {
         return res.status(400).json({
             message: "Can't get current account"
         });
     }
+    data['reminder_account_number'] = currentAccount.account_number;
+    data['status'] = "UNDONE";
 
-    let total = await RemindDB.count({ 
-        data,
-        reminder_account_number: currentAccount.account_number,
-        status: "UNDONE" 
-    });
+    let total = await RemindDB.count(data);
 
-    let resp = await RemindDB.find({
-        data,
-        reminder_account_number: currentAccount.account_number,
-        status: "UNDONE"
-    }).limit(limit ? limit : 20)
-    .skip(skip ? skip : 0);
+    let resp = await RemindDB.find(data).limit(limit ? limit : 20)
+        .skip(skip ? skip : 0);
 
     if (resp) {
         return res.status(200).json({
@@ -87,39 +81,33 @@ const getReminder = async(req, res, next) => {
 }
 
 //Lấy danh sách bị người khác nhắc GET
-const getReminded = async(req, res, next) => {
+const getReminded = async (req, res, next) => {
     let startDate = req.query.start;
     let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
 
-  let data = {};
-  if (startDate && endDate) {
-    data = {
-      $where: function () {
-        return this.updated_date > startDate && this.updated_date < endDate;
-      },
-    };
-  }
-    let currentAccount = await BankAccountDB.findOne({user_id: req.user.user_id});
-    if(currentAccount == null){
+    let data = {};
+    if (startDate && endDate) {
+        data = {
+            $where: function () {
+                return this.updated_date > startDate && this.updated_date < endDate;
+            },
+        };
+    }
+    let currentAccount = await BankAccountDB.findOne({ user_id: req.user.user_id });
+    if (currentAccount == null) {
         return res.status(400).json({
             message: "Can't get current account"
         });
     }
+    data['reminded_account_number'] = currentAccount.account_number;
+    data['status'] = "UNDONE";
 
-    let total = await RemindDB.count({ 
-        data,
-        reminded_account_number: currentAccount.account_number,
-        status: "UNDONE"
-    });
+    let total = await RemindDB.count(data);
 
-    let resp = await RemindDB.find({
-        data,
-        reminded_account_number: currentAccount.account_number,
-        status: "UNDONE"
-    }).limit(limit ? limit : 20)
-    .skip(skip ? skip : 0);
+    let resp = await RemindDB.find(data).limit(limit ? limit : 20)
+        .skip(skip ? skip : 0);
 
     if (resp) {
         return res.status(200).json({
@@ -136,42 +124,64 @@ const getReminded = async(req, res, next) => {
 
 //Hủy nhắc nợ PUT
 //Truyền vô body remindId
-const cancelRemind = async(req, res, next) => {
-    const {remindId} = req.body;
+const cancelRemind = async (req, res, next) => {
+    const { remindId } = req.body;
 
-    let resp = await RemindDB.updateOne({remind_id: remindId},{status:"CANCEL"})
+    let remind = await RemindDB.findOne({remind_id: remindId, status: "UNDONE"})
+    if (!remind){
+        return res.status(400).json({
+            message: "Reminded isn't exist"
+        })
+    }
 
-    if(resp) {
+    let resp = await RemindDB.updateOne({ remind_id: remindId }, { status: "CANCEL" })
+
+    if (resp) {
         return res.status(200).json({
-            message: "Get reminded successfully",
+            message: "Cancel reminded successfully.",
             data: resp,
         })
     }
     return res.status(400).json({
-        message: "Can't get reminded"
+        message: "Cancel reminded fail."
     })
 }
 
 //Thanh toán nhắc nợ POST
 //Truyền vô body remindId, reminderAccountNumber, debt, message
-const payRemind = async(req,res,next) =>{
-    const {remindId, reminderAccountNumber, debt, message} = req.body;
+const payRemind = async (req, res, next) => {
+    const { remindId, reminderAccountNumber, debt, message } = req.body;
 
-    let curUser = await BankAccountDB.findOne({user_id: req.user.user_id, type: STANDARD_ACCOUNT}); // Note lại để test
-    let recUser = await BankAccountDB.findOne({account_number: reminderAccountNumber, type: STANDARD_ACCOUNT});
+    let curUser = await BankAccountDB.findOne({ user_id: req.user.user_id, type: STANDARD_ACCOUNT }); // Note lại để test
+    let recUser = await BankAccountDB.findOne({ account_number: reminderAccountNumber, type: STANDARD_ACCOUNT });
 
-    let resp = await handleTransfer(curUser.user_id, recUser.user_id, debt, message, "PAY", curUser.balance, recUser.balance, curUser.account_number, recUser.account_number, true);
-    if(resp.status == "OK"){
-        resp = await RemindDB.update({remind_id: remindId},{status:"DONE"});
-        if (resp){
-            return res.status(200).json({
-                message: "Pay remind successfully."
-            });
+    let remind = await RemindDB.findOne({remind_id: remindId, status:"UNDONE"});
+    if (!remind){
+        return res.status(400).json({
+            message: remind.message
+        })
+    }
+
+    if (curUser.balance < remind.debt){
+        return res.status(400).json({
+            message: "Pay remind fail. Your account don't have enough money."
+        })
+    }
+
+    if (remind.debt == debt){
+        let resp = await handleTransfer(curUser.user_id, recUser.user_id, debt, message, "PAY", curUser.balance, recUser.balance, curUser.account_number, recUser.account_number, true);
+        if (resp.status == "OK") {
+            resp = await RemindDB.updateOne({ remind_id: remindId }, { status: "DONE" });
+            if (resp) {
+                return res.status(200).json({
+                    message: "Pay remind successfully."
+                });
+            }
         }
     }
 
     return res.status(400).json({
-        message: resp.message
+        message: "Pay remind fail."
     })
 }
 

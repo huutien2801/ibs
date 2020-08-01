@@ -67,6 +67,106 @@ const getAllById = async (req, res, next) => {
     })
 }
 
+const getRecMoney = async (req, res, next) => {
+    let q = JSON.parse(req.query.q);
+    let startDate = req.query.start;
+    let endDate = req.query.end;
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.offset);
+   
+    let filterRec = {}
+    if (startDate && endDate) {
+        filterRec = {
+            $where: function () {
+                return this.updated_date > startDate && this.updated_date < endDate;
+            },
+
+        }
+    }
+    if (q.accountNumber){
+        filterRec['receiver_account_number'] = q.accountNumber
+    } else {
+        filterRec['receiver_id'] = req.user.user_id
+    }
+    if (q.isInside){
+        filterRec['is_inside'] = q.isInside
+    }
+    //filterRec['$sum'] = "$money";
+    
+    let totalRec = await ExchangeMoneyDB.count(filterRec);
+
+    let respRec = await ExchangeMoneyDB.find(filterRec).limit(limit ? limit : 20)
+        .skip(skip ? skip : 0);
+    
+    let sum = 0
+    respRec.forEach( resp => {
+        sum += resp.money
+    })
+    
+    if (respRec) {
+        return res.status(200).json({
+            message: "Get all history sender successfully",
+            data: respRec,
+            total: totalRec,
+            sum: sum,
+        })
+    }
+
+    return res.status(400).json({
+        message: "Can't get history sender at this time."
+    })
+}
+
+
+const getSenMoney = async (req, res, next) => {
+    let q = JSON.parse(req.query.q);
+    let startDate = req.query.start;
+    let endDate = req.query.end;
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.offset);
+   
+    let filterSen = {}
+    if (startDate && endDate) {
+        filterSen = {
+            $where: function () {
+                return this.updated_date > startDate && this.updated_date < endDate;
+            },
+
+        }
+    }
+    if (q.accountNumber){
+        filterSen['sender_account_number'] = q.accountNumber
+    } else {
+        filterSen['sender_id'] = req.user.user_id
+    }
+    if (q.isInside){
+        filterSen['is_inside'] = q.isInside
+    }
+    //filterRec['$sum'] = "$money";
+    
+    let totalSen = await ExchangeMoneyDB.count(filterSen);
+
+    let respSen = await ExchangeMoneyDB.find(filterSen).limit(limit ? limit : 20)
+        .skip(skip ? skip : 0);
+    
+    let sum = 0
+    respSen.forEach( resp => {
+        sum += resp.money
+    })
+    
+    if (respSen) {
+        return res.status(200).json({
+            message: "Get all history sender successfully",
+            data: respSen,
+            total: totalSen,
+            sum: sum,
+        })
+    }
+
+    return res.status(400).json({
+        message: "Can't get history sender at this time."
+    })
+}
 
 const depositMoney = async (req, res, next) => {
     const { accountNumber, username, money, feeType, message } = req.body;
@@ -283,5 +383,7 @@ module.exports = {
     getAllById,
     depositMoney,
     getUserLogs,
-    getAllHistoryAdmin
+    getAllHistoryAdmin,
+    getRecMoney,
+    getSenMoney
 };
