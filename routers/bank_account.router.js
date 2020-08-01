@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/create', protect, createBankAccount);
 router.post('/transfer', protect, transferMoney);
-router.get('/standard', getBankAccountStandard);
-router.get('/deposit', getBankAccountDeposit);
+router.get('/standard', protect, getBankAccountStandard);
+router.get('/deposit', protect, getBankAccountDeposit);
 
 module.exports = router;
