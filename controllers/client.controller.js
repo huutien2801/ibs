@@ -1,4 +1,3 @@
-const User = require('../models/users.model');
 const Partner = require('../models/partner.model');
 const PartnerLog = require("../models/partner_logs.model")
 const BankAccount = require('../models/bank_account.model');
@@ -20,4 +19,45 @@ const getAccountInfoSAPHASANBANK = async ( req,res,next) => {
             
         }
       });
+}
+
+const getAccountInfoQLBank = async ( req,res,next) => {
+    let ts = Date.now();
+    let data = {
+      accountNumber: "12345"
+    }
+    let hashStr = md5(ts + data + md5("dungnoiaihet"));
+    axios({
+      method: 'post',
+      url: 'https://qlbank1.herokuapp.com/api/external/customer',
+      data,
+      headers: {
+          ts,
+          partnerCode: "3TBank",
+          hashedSign: hashStr,
+      }
+    })
+}
+
+// const depositMoneyQLBank = async ( req,res,next) => {
+//   let ts = Date.now();
+//   let data = {
+//     accountId: req..accountId,
+//     amount: req..amount
+//   }
+//   let hashStr = md5(ts + data + md5("dungnoiaihet"));
+//   axios({
+//     method: 'post',
+//     url: 'https://qlbank1.herokuapp.com/api/external/transaction',
+//     data,
+//     headers: {
+//         ts,
+//         partnerCode: "3TBank",
+//         hashedSign: hashStr,
+//     }
+//   })
+// }
+
+module.exports = {
+  getAccountInfoQLBank
 }

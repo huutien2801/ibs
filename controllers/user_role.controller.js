@@ -2,6 +2,7 @@ const UserRole = require('../models/user_role.model');
 const Partner = require('../models/partner.model');
 const BankAccount = require('../models/bank_account.model');
 const OTPDB = require('../models/otp.model');
+const ExchangeMoney = require('../models/exchange_money.model');
 const bcrypt = require('bcrypt');
 const { generateAccountNumber, generatePIN, generateOTP, sendOTPMail } = require('../utils/util')
 
@@ -56,7 +57,7 @@ const getInfoUser = async (req, res, next) => {
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
     let total = await UserRole.count({ role_code: q.roleCode });
-    UserRole.find({ role_code: q.roleCode }, { username: 0, password: 0 }, function (err, users) {
+    UserRole.find({ role_code: q.roleCode, email: q.email }, { username: 0, password: 0 }, function (err, users) {
         console.log(users)
         if (users) {
             return res.status(200).json({
@@ -75,7 +76,7 @@ const getInfoUser = async (req, res, next) => {
 
 const updateInfoUser = async (req, res, next) => {
     let userId = req.query.userId;
-    const { address, dob, phone, gender } = req.body;
+    const { address, dob, phone, gender, fullName } = req.body;
     let updater = {}
     if (address) {
         updater['address'] = address
@@ -88,6 +89,31 @@ const updateInfoUser = async (req, res, next) => {
     }
     if (gender) {
         updater['gender'] = gender
+    }
+    if (fullName) {
+        updater['full_name'] = fullName
+        let hasSenderNameChange = await ExchangeMoney.find({ sender_id: userId});
+        let hasReceiverNameChange = await ExchangeMoney.find({ receiver_id: userId});
+        if (hasSenderNameChange)
+        {
+            let update = await ExchangeMoney.update({sender_id: userId}, {sender_full_name: fullName});
+            if (!update)
+            {
+                return res.status(400).json({
+                    message: "Error when update name"
+                })
+            }
+        }
+        if (hasReceiverNameChange)
+        {
+            let update = await ExchangeMoney.update({receiver_id: userId}, {receiver_full_name: fullName});
+            if (!update)
+            {
+                return res.status(400).json({
+                    message: "Error when update name"
+                })
+            }
+        }
     }
     UserRole.update({ user_id: userId }, updater, function (err, user) {
         if (user) {
