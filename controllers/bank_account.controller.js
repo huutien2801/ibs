@@ -140,6 +140,7 @@ const confirmOTPTransferMoney = async(req, res, next) => {
 
     let otp = await OTPDB.find(filter).limit(1).sort({createdAt:-1})
     if (!otp){
+        let deleteTransferMoney = await TransferMoneyTempDB.deleteOne({sender_user_id: currentUserRole.user_id});
         return res.status(400).json({
             status: "ERROR",
             message: "Your OTP code is expired."
