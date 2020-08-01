@@ -164,20 +164,24 @@ const getInfoUserBy = async (req, res, next) => {
         }
     }
 
+    if (!filter.username && !filter.user_id){
+        return res.status(400).json({
+            message: "Error, Can't find user infomation."
+        })
+    }
+
     UserRole.find( filter , { password: 0 }, function (err, user) {
         if (user) {
             return res.status(200).json({
+                message: "Get user infomation successful.",
                 user
             })
         }
-        else {
-            return res.status(400).json({
-                message: "User not exists"
-            })
-        }
+ 
+        return res.status(400).json({
+            message: "User not exists"
+        })
     })
-
-    
 }
 
 //API create user use bank POST
