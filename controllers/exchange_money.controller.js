@@ -91,6 +91,9 @@ const getRecMoney = async (req, res, next) => {
     if (q.isInside){
         filterRec['is_inside'] = q.isInside
     }
+    if (q.partnerCode){
+        filterRec['partner_code'] = q.partnerCode
+    }
     //filterRec['$sum'] = "$money";
     
     let totalRec = await ExchangeMoneyDB.count(filterRec);
@@ -141,6 +144,9 @@ const getSenMoney = async (req, res, next) => {
     }
     if (q.isInside){
         filterSen['is_inside'] = q.isInside
+    }
+    if (q.partnerCode){
+        filterRec['partner_code'] = q.partnerCode
     }
     //filterRec['$sum'] = "$money";
     
