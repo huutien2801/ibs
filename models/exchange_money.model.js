@@ -42,6 +42,14 @@ const ExchangeMoneySchema = mongoose.Schema({
         type: String,
         required: true,
     },
+    receiver_full_name: {
+        type: String,
+        required: true
+    },
+    sender_full_name: {
+        type: String,
+        required: true
+    },
     send_date: {
         type: Date,
         default: Date.now

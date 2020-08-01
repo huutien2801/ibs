@@ -172,12 +172,15 @@ const depositMoney = async (req, res, next) => {
     const { accountNumber, username, money, feeType, message } = req.body;
     if (accountNumber != null) {
         const curUser = await BankAccount.findOne({ account_number: accountNumber });
+        const tempCurUser = await UserRole.findOne({ user_id: curUser.user_id });
         let resp1 = await ExchangeMoneyDB.create({
             sender_id: curUser.user_id,
             receiver_id: curUser.user_id,
             is_inside: true,
             receiver_account_number: curUser.account_number,
             sender_account_number: curUser.account_number,
+            receiver_full_name: tempCurUser.full_name,
+            sender_full_name: tempCurUser.full_name,
             money: money,
             fee_type: feeType,
             message,
@@ -209,6 +212,8 @@ const depositMoney = async (req, res, next) => {
                 is_inside: true,
                 receiver_account_number: curUser.account_number,
                 sender_account_number: curUser.account_number,
+                receiver_full_name: curUser.full_name,
+                sender_full_name: curUser.full_name,
                 message,
             });
             let resp2 = await BankAccount.findOneAndUpdate({ account_number: curAccountNumber }, { balance: newBalance });
