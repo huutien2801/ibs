@@ -57,7 +57,7 @@ const getAccountInfoQLBank = async ( req,res,next) => {
 }
 
 const transferMoneyQLBank = async (req, res, next) => {
-  const {accountNumber, amount, content, feeType, partnerCode} = req.body;
+  const {receiverAccountNumber, amount, message, feeType, partnerCode} = req.body;
   switch(partnerCode)
   {
     case "SAPHASANBank":
@@ -82,9 +82,9 @@ const transferMoneyQLBank = async (req, res, next) => {
   }
   let temp = await TransferMoneyTempDB.create({
       sender_user_id: currentUserRole.user_id,
-      receiver_account_number: parseInt(accountNumber),
+      receiver_account_number: parseInt(receiverAccountNumber),
       amount,
-      message: content,
+      message,
       fee_type: feeType,
       partner_code: partnerCode
   })
