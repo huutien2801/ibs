@@ -16,8 +16,7 @@ const ExchangeMoneySchema = mongoose.Schema({
         required: true
     },
     receiver_id: {
-        type: Number,
-        required: true
+        type: Number
     },
     money: {
         type: Number,
@@ -43,12 +42,13 @@ const ExchangeMoneySchema = mongoose.Schema({
         required: true,
     },
     receiver_full_name: {
-        type: String,
-        required: true
+        type: String
     },
     sender_full_name: {
-        type: String,
-        required: true
+        type: String
+    },
+    sign: {
+        type: String
     },
     send_date: {
         type: Date,

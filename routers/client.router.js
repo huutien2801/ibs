@@ -1,10 +1,11 @@
 const express = require('express');
-const {getAccountInfoQLBank, depositMoneyQLBank} = require('../controllers/client.controller');
+const {getAccountInfoQLBank, transferMoneyQLBank, confirmOTPTransferMoneyQLBank} = require('../controllers/client.controller');
 
 const router = express.Router();
 
 
 router.get('/get-info', getAccountInfoQLBank);
-router.post('/deposit-money', depositMoneyQLBank);
+router.post('/transfer-money', transferMoneyQLBank);
+router.post('/confirm-otp', confirmOTPTransferMoneyQLBank);
 
 module.exports = router;
