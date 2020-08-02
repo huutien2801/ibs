@@ -50,6 +50,77 @@ const getAccountInfoQLBank = async ( req,res,next) => {
     })
 }
 
+const transferMoneyQLBank = async (req, res, next) => {
+  const {accountNumber, amount, content} = req.body;
+  let currentUserRole = await UserRoleDB.findOne({user_id: 40});//req.user.user_id});
+  let otpCode = generateOTP();
+  let resp = await sendOTPMail(currentUserRole.email, currentUserRole.full_name, otpCode);
+  if (resp.status == "OK") {
+      await OTPDB.create({
+          email: currentUserRole.email,
+          otp: otpCode
+      })
+  } else {
+      return res.status(400).json({
+          message: "Error when sending email"
+      })
+  }
+  let temp = await TransferMoneyTempDB.create({
+      sender_user_id: currentUserRole.user_id,
+      receiver_account_number: receiverAccountNumber,
+      amount,
+      message,
+      fee_type: feeType
+  })
+  if (!temp)
+  {
+      return res.status(400).json({
+          message: "Error when transfering money"
+      })
+  }
+  else {
+      return res.status(200).json({
+          message: "OTP sent",
+          status: "SENT"
+      })
+  }
+}
+
+const confirmOTPTransferMoney = async(req, res, next) => {
+  const {OTP} = req.body;
+  let currentUserRole = await UserRoleDB.findOne({user_id: 40});//req.user.user_id});
+  filter = {}
+  filter['email'] = currentUserRole.email;
+
+  let otp = await OTPDB.find(filter).limit(1).sort({createdAt:-1})
+  if (!otp){
+      let deleteTransferMoney = await TransferMoneyTempDB.deleteMany({sender_user_id: currentUserRole.user_id});
+      return res.status(400).json({
+          status: "ERROR",
+          message: "Your OTP code is expired."
+      })
+  }
+  if (otp[0].otp == OTP){
+      let data = await TransferMoneyTempDB.findOne({sender_user_id: currentUserRole.user_id}).sort({created_at: -1});
+      let currentBankAccount = await BankAccountDB.findOne({user_id: currentUserRole.user_id});
+      let receiverBankAccount = await BankAccountDB.findOne({account_number: data.receiver_account_number});
+      let handle = await handleTransfer(currentUserRole.user_id, receiverBankAccount.user_id, data.amount, data.message, data.fee_type, currentBankAccount.balance, receiverBankAccount.balance, currentBankAccount.account_number,  data.receiver_account_number, true);
+      if(handle.status == "OK"){
+          let deleteTransferMoney = await TransferMoneyTempDB.deleteMany({sender_user_id: currentUserRole.user_id});
+          return res.status(200).json({
+              message: "Transfer money success"
+      });
+      }
+      return res.status(400).json({
+          status: "ERROR",
+          message: "OTP did't match"
+      })
+  }
+}
+
+
+
+
 const depositMoneyQLBank = async ( req,res,next) => {
   let ts = Date.now();
   let data = {
@@ -84,8 +155,6 @@ const depositMoneyQLBank = async ( req,res,next) => {
       }
       else {
         let newBalance = parseInt(response1.balance) - parseInt(req.body.amount);
-        console.log(req.body.amount);
-        console.log(newBalance);
         let update = BankAccount.findOneAndUpdate({account_number: req.query.accountNumber}, {balance: parseInt(newBalance)}, function(err, response2) {
           if (err)
           {

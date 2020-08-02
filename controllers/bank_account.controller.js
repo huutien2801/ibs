@@ -98,7 +98,7 @@ const createBankAccount = async(req, res, next) => {
 //Truyền vô body receiveAccount, amount, mess, type
 const transferMoney = async (req, res, next) => {
     const {receiverAccountNumber, amount, message, feeType} = req.body;
-    let currentUserRole = await UserRoleDB.findOne({user_id: 40});//req.user.user_id});
+    let currentUserRole = await UserRoleDB.findOne({user_id: req.user.user_id});
     let otpCode = generateOTP();
     let resp = await sendOTPMail(currentUserRole.email, currentUserRole.full_name, otpCode);
     if (resp.status == "OK") {
@@ -134,7 +134,7 @@ const transferMoney = async (req, res, next) => {
 
 const confirmOTPTransferMoney = async(req, res, next) => {
     const {OTP} = req.body;
-    let currentUserRole = await UserRoleDB.findOne({user_id: 40});//req.user.user_id});
+    let currentUserRole = await UserRoleDB.findOne({user_id: req.user.user_id});
     filter = {}
     filter['email'] = currentUserRole.email;
 
