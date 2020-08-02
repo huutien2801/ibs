@@ -23,6 +23,9 @@ const transferMoneyTempSchema = mongoose.Schema(
         fee_type: {
             type: String,
         },
+        partner_code: {
+            type: String,
+        },
 		created_at: {
             type: Date,
             default: Date.now

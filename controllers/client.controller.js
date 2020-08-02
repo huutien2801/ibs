@@ -57,8 +57,17 @@ const getAccountInfoQLBank = async ( req,res,next) => {
 }
 
 const transferMoneyQLBank = async (req, res, next) => {
-  const {accountNumber, amount, content, feeType} = req.body;
-  let currentUserRole = await UserRoleDB.findOne({user_id: 40});//req.user.user_id});
+  const {accountNumber, amount, content, feeType, partnerCode} = req.body;
+  switch(partnerCode)
+  {
+    case "SAPHASANBank":
+        break;
+    default:
+        return res.status(400).json({
+          message: "Your bank is not my partner. Please connect to my bank and call API later"
+        })
+  }
+  let currentUserRole = await UserRoleDB.findOne({user_id: req.user.user_id});
   let otpCode = generateOTP();
   let resp = await sendOTPMail(currentUserRole.email, currentUserRole.full_name, otpCode);
   if (resp.status == "OK") {
@@ -76,7 +85,8 @@ const transferMoneyQLBank = async (req, res, next) => {
       receiver_account_number: parseInt(accountNumber),
       amount,
       message: content,
-      fee_type: feeType
+      fee_type: feeType,
+      partner_code: partnerCode
   })
   if (!temp)
   {
@@ -96,8 +106,8 @@ const transferMoneyQLBank = async (req, res, next) => {
 
 const confirmOTPTransferMoneyQLBank = async(req, res, next) => {
   const {OTP} = req.body;
-  let currentUserRole = await UserRoleDB.findOne({user_id: 40});//req.user.user_id});
-  let currentBankAccount = await BankAccount.findOne({user_id: 40});//req.user.user_id});
+  let currentUserRole = await UserRoleDB.findOne({user_id: req.user.user_id});
+  let currentBankAccount = await BankAccount.findOne({user_id: req.user.user_id});
   filter = {}
   filter['email'] = currentUserRole.email;
   let otp = await OTPDB.find(filter).limit(1).sort({createdAt:-1})
@@ -140,7 +150,7 @@ const confirmOTPTransferMoneyQLBank = async(req, res, next) => {
       data,
       headers: {
           ts,
-          partnerCode: "3TBank",
+          partnerCode: dateTemp.partner_code,
           hashedSign: hashStr,
           sign
       }
