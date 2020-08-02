@@ -46,7 +46,14 @@ const getBankAccountDeposit = async(req, res, next) => {
 const createBankAccount = async(req, res, next) => {
     const {userId, type, balance, ratioMonth, deposit} = req.body
 
-    let user = await UserRoleDB.findOne({"user_id":userId})
+    let filter = {};
+    if (userId){
+        filter['user_id'] = userId;
+    } else {
+        filter['user_id'] = req.user.user_id;
+    }
+
+    let user = await UserRoleDB.findOne(filter);
     if (!user){
         return res.status(400).json({
             message: "User is not exist."
@@ -181,29 +188,29 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
 
     let resp = await BankAccountDB.updateOne({user_id: senderId, type: STANDARD_ACCOUNT}, {balance: curAmountBef});
     let respRec = await BankAccountDB.updateOne({user_id: receiverId, type: STANDARD_ACCOUNT}, {balance: recAmountBef });
-    let senderUserRole = await UserRoleDB.find({ user_id: senderId});
-    let receiverUserRole = await UserRoleDB.find({ user_id: receiverId});
+    let senderUserRole = await UserRoleDB.findOne({ user_id: senderId});
+    let receiverUserRole = await UserRoleDB.findOne({ user_id: receiverId});
     if (resp && respRec){
-            //create log transfer money
-            let now = new Date();
-            let savetoLogs = await ExchangeMoneyDB.create({
-                sender_id: senderId,
-                receiver_id: receiverId,
-                money: amount,
-                message: mess,
-                fee_type: feeType,
-                receiver_account_number: receiveAc,
-                sender_account_number: senderAc,
-                receiver_full_name: receiverUserRole.full_name,
-                sender_full_name: senderUserRole.full_name,
-                is_inside: isInside,
-                created_time_second: now.getTime(),
-            })
+        //create log transfer money
+        let now = new Date();
+        await ExchangeMoneyDB.create({
+            sender_id: senderId,
+            receiver_id: receiverId,
+            money: amount,
+            message: mess,
+            fee_type: feeType,
+            receiver_account_number: receiveAc,
+            sender_account_number: senderAc,
+            receiver_full_name: receiverUserRole.full_name,
+            sender_full_name: senderUserRole.full_name,
+            is_inside: isInside,
+            created_time_second: now.getTime(),
+        })
 
-            return ({
-                status: "OK",
-                message: "Transfer money successfully."
-            })
+        return ({
+            status: "OK",
+            message: "Transfer money successfully."
+        })
         
     }
 
