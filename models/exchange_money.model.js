@@ -13,7 +13,6 @@ const ExchangeMoneySchema = mongoose.Schema({
     },
     sender_id: {
         type: Number,
-        required: true
     },
     receiver_id: {
         type: Number

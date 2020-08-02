@@ -3,11 +3,13 @@ const BankAccount = require('../models/bank_account.model');
 const Partner = require('../models/partner.model');
 const PartnerLog = require("../models/partner_logs.model")
 const UserRole = require('../models/user_role.model');
+const ExchangeMoney = require('../models/exchange_money.model');
 const jwt = require('jsonwebtoken');
 const ErrorCode = require('../config/ErrorCode');
 const md5 = require('md5');
 const NodeRSA = require('node-rsa');
 const openpgp = require('openpgp');
+const { FEE_TRANSFER_BANK } = require('../utils/util');
 let requestTypeEnum = {
     GET_USER_INFO: "GET_USER_INFO",
     CHANGE_BALANCE: "CHANGE_BALANCE"
@@ -215,12 +217,32 @@ const rechargeMoneyInAccount = async (req, res, next) => {
                 status: 404
             });
         }
-
-        let newBalance = account.balance + body.cost
+        let fee = 0;
+        if (body.feeType == "NOT_PAY")
+        {
+            fee = FEE_TRANSFER_BANK;
+        }
+        let newBalance = account.balance + body.cost - fee
         const filter = { account_number: body.accountNumber };
         const update = { balance: newBalance };
         let resp = await BankAccount.findOneAndUpdate(filter, update);
         if (resp) {
+            let currentUserRole = await UserRole.findOne({user_id: account.user_id})
+            let partner = await Partner.findOne({partner_code});
+            let autoMessage = "Ngân hàng" +  partner.partner_name +  "STK" + body.accountNumber +  body.sendAccountName + "đã chuyển khoản cho bạn"
+            await ExchangeMoney.create({
+                partner_code,
+                money: body.cost,
+                message: autoMessage,
+                fee_type: body.feeType,
+                is_inside: false,
+                receiver_account_number: body.accountNumber,
+                sender_account_number: body.sendAccountNumber,
+                receiver_full_name: currentUserRole.full_name,
+                sender_full_name: body.sendAccountName,
+                sign
+
+            })
 
             const keyPrivate = new NodeRSA(process.env.RSA_PRIVATE_KEY)
 

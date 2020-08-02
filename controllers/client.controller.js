@@ -127,19 +127,20 @@ const confirmOTPTransferMoneyQLBank = async(req, res, next) => {
     let ts = Date.now();
     let dataTemp = await TransferMoneyTempDB.findOne({sender_user_id: currentUserRole.user_id}).sort({created_at: -1});
     let finalAmount = 0
-    if (dataTemp.fee_type == "PAY")
-    {
-      finalAmount = parseInt(dataTemp.amount)
-    }
-    else {
-      finalAmount = parseInt(dataTemp.amount) - FEE_TRANSFER_BANK
-    }
     let data = {
       sentUserId: currentBankAccount.account_number, // của ng gửi
       sentUserName: currentUserRole.full_name, // của ng gửi
       accountNumber: dataTemp.receiver_account_number, // account number của ng nhận
-      amount: parseInt(finalAmount),
+      amount: parseInt(dataTemp.amount),
       content: dataTemp.message
+    }
+    if (dataTemp.fee_type == "PAY")
+    {
+      finalAmount = parseInt(dataTemp.amount) - FEE_TRANSFER_BANK
+      data["isReceiverPaid"] = false
+    }
+    else {
+      data["isReceiverPaid"] = true
     }
     let hashStr = md5(ts + data + md5("dungnoiaihet"))
     const keyPrivate = new NodeRSA(process.env.RSA_PRIVATE_KEY)
