@@ -140,19 +140,19 @@ const confirmOTPTransferMoney = async(req, res, next) => {
 
     let otp = await OTPDB.find(filter).limit(1).sort({createdAt:-1})
     if (!otp){
-        let deleteTransferMoney = await TransferMoneyTempDB.deleteOne({sender_user_id: currentUserRole.user_id});
+        let deleteTransferMoney = await TransferMoneyTempDB.delete({sender_user_id: currentUserRole.user_id});
         return res.status(400).json({
             status: "ERROR",
             message: "Your OTP code is expired."
         })
     }
     if (otp[0].otp == OTP){
-        let data = await TransferMoneyTempDB.findOne({sender_user_id: currentUserRole.user_id});
+        let data = await TransferMoneyTempDB.find({sender_user_id: currentUserRole.user_id}).limit(1).sort({created_at: -1});
         let currentBankAccount = await BankAccountDB.findOne({user_id: currentUserRole.user_id});
         let receiverBankAccount = await BankAccountDB.findOne({account_number: data.receiver_account_number});
         let handle = await handleTransfer(currentUserRole.user_id, receiverBankAccount.user_id, data.amount, data.message, data.fee_type, currentBankAccount.balance, receiverBankAccount.balance, currentBankAccount.account_number,  data.receiver_account_number, true);
         if(handle.status == "OK"){
-            let deleteTransferMoney = await TransferMoneyTempDB.deleteOne({sender_user_id: currentUserRole.user_id});
+            let deleteTransferMoney = await TransferMoneyTempDB.delete({sender_user_id: currentUserRole.user_id});
             return res.status(200).json({
                 message: "Transfer money success"
         });
