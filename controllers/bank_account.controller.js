@@ -186,7 +186,7 @@ const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBal
     if (resp && respRec){
             //create log transfer money
             let now = new Date();
-            ExchangeMoneyDB.create({
+            let savetoLogs = await ExchangeMoneyDB.create({
                 sender_id: senderId,
                 receiver_id: receiverId,
                 money: amount,

@@ -49,26 +49,15 @@ const addUserToList = async(req, res, next) => {
 
 const showList = async(req, res, next) => {
     let currentUserBankAccount = await BankAccount.findOne({ user_id: req.user.user_id });
-    let startDate = req.query.start;
-    let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
 
-    let data = {};
-    if (startDate && endDate) {
-        data = {
-        $where: function () {
-            return this.updated_date > startDate && this.updated_date < endDate;
-            },
-        };
-    }
 
     let total = await ExchangeUser.count({
-        sender_account_number: currentUserBankAccount.account_number, 
-        data
+        sender_account_number: currentUserBankAccount.account_number
     });
 
-    ExchangeUser.find({sender_account_number: currentUserBankAccount.account_number, data}, function(err, users) {
+    ExchangeUser.find({sender_account_number: currentUserBankAccount.account_number}, function(err, users) {
         if (users.length) {
             return res.status(200).json({
                 users,
