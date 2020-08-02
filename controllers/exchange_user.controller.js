@@ -51,26 +51,41 @@ const showList = async(req, res, next) => {
     let currentUserBankAccount = await BankAccount.findOne({ user_id: req.user.user_id });
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
-
-
-    let total = await ExchangeUser.count({
-        sender_account_number: currentUserBankAccount.account_number
-    });
-
-    ExchangeUser.find({sender_account_number: currentUserBankAccount.account_number}, function(err, users) {
-        if (users.length) {
-            return res.status(200).json({
-                users,
-                total
-            })
+    let q = JSON.parse(req.query.q);
+    let filterReceiver = {}
+    try {
+        
+        filterReceiver['sender_account_number'] = currentUserBankAccount.account_number
+        if(q.isInside != undefined || q.isInside != null){
+            filterReceiver['is_inside'] = q.isInside
         }
-        else {
-            return res.status(400).json({
-                message: "Empty list"
-            })
+
+        if(q.partnerCode){
+            filterReceiver['partner_code'] = q.partnerCode
         }
-    }).limit(limit ? limit : 20)
-      .skip(skip ? skip : 0);
+
+        let total = await ExchangeUser.count(filterReceiver);
+        ExchangeUser.find(filterReceiver, function(err, users) {
+            if (users.length) {
+                return res.status(200).json({
+                    users,
+                    total
+                })
+            }
+            else {
+                return res.status(400).json({
+                    message: "Empty list"
+                })
+            }
+        }).limit(limit ? limit : 20)
+          .skip(skip ? skip : 0);
+    } catch (error) {
+        return res.status(400).json({
+            message: "Sys has error",
+            errorCode: error
+        })
+    }
+  
 };
 
 
