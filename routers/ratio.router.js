@@ -4,8 +4,8 @@ const { protect } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router.get('', getRatio);
-router.post('', createRatio);
-router.put('', updateRatio);
+router.get('', protect, getRatio);
+router.post('', protect, createRatio);
+router.put('', protect, updateRatio);
 
 module.exports = router;

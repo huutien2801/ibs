@@ -29,12 +29,13 @@ const getBankAccountDeposit = async(req, res, next) => {
     let limit = parseInt(req.query.limit);
     let accountNumber = req.query.accountNumber;
     filter = {
-        user_id: req.user.user_id
+        user_id: req.user.user_id,
+        type: DEPOSIT_ACCOUNT
     }
     if (accountNumber){
         filter['account_number'] = accountNumber
     }
-    let bankAccount = await BankAccountDB.find({user_id: req.user.user_id, type: DEPOSIT_ACCOUNT}).limit(limit ? limit : 20).skip(offset ? offset : 0)
+    let bankAccount = await BankAccountDB.find(filter).limit(limit ? limit : 20).skip(offset ? offset : 0)
     if (bankAccount){
         return res.status(200).json({
             message: "Get bank deposit account successful.",
@@ -71,8 +72,9 @@ const createBankAccount = async(req, res, next) => {
         type,
     }
 
-    var currentTime = new Date();
+    
     if (type == STANDARD_ACCOUNT){
+        let currentTime = new Date();
         if (!userId) {
             return res.status(400).json({
                 message: "Invalid userID."
@@ -83,8 +85,11 @@ const createBankAccount = async(req, res, next) => {
         data["balance"] = balance;
         data["expired_date"] = currentTime.setFullYear(currentTime.getFullYear() + 4);
     } else {
+        let depositDate = new Date();
+        let redeemDate = new Date();
+        
         data["deposit"] = deposit;
-        data["deposit_date"] = currentTime;
+        data["deposit_date"] = depositDate;
         data["account_number"] = generateAccountNumber();
         //get ratio rate and redeem
         let ratioResp = await RatioDB.findOne({month: ratioMonth});
@@ -94,10 +99,11 @@ const createBankAccount = async(req, res, next) => {
                 message: "Choose wrong deposit month."
             })
         }
-
+        redeemDate = redeemDate.setMonth(redeemDate.getMonth() + parseInt(ratioResp.month));
         data["ratio_id"] = ratioResp.ratio_id;
         data["redeem"] = parseInt(deposit * ratioResp.ratio / 100) + parseInt(deposit);
-        data["redeem_date"] = currentTime.setMonth(currentTime.getMonth() + ratioResp.month);
+
+        data["redeem_date"] = redeemDate;
     }
 
     let resp = await BankAccountDB.create(data);
@@ -109,6 +115,32 @@ const createBankAccount = async(req, res, next) => {
     return res.status(400).json({
         message: "Can't create bank account at this time."
     })
+}
+
+const redeemDepositAccount = async (req, res, next) => {
+    const { accountNumber } = req.body
+
+    let account = await BankAccountDB.findOne({
+        bank_account: accountNumber,
+        user_id: req.user.user_id,
+        type: "DEPOSIT"
+    })
+
+    if (account) {
+        let deleAcc = await BankAccountDB.deleteOne({
+            bank_account: accountNumber,
+            user_id: req.user.user_id,
+            type: "DEPOSIT"
+        })
+        if (deleAcc) {
+            return res.status(200).json({
+                message: "Redeem succeed."
+            });
+        }
+    }
+    return res.status(400).json({
+        message: "Redeem fail."
+    });
 }
 
 //Chuyển khoản cùng ngân hàng  POST
@@ -237,6 +269,7 @@ module.exports = {
     handleTransfer,
     getBankAccountStandard,
     getBankAccountDeposit,
-    confirmOTPTransferMoney
+    confirmOTPTransferMoney,
+    redeemDepositAccount
 };
     
