@@ -9,9 +9,19 @@ require('dotenv').config({
 
 const addUserToList = async(req, res, next) => {
     const { receiverAccountNumber, nickName, isInside, partnerCode } = req.body
+    let senderBankAccount = await BankAccount.findOne({user_id: req.user.user_id})
+    let senderUserRole = await UserRole.findOne({user_id: req.user.user_id})
+    let receiverBankAccount = await BankAccount.findOne({account_number: receiverAccountNumber})
+    let receiverUserRole = await UserRole.findOne({user_id: receiverBankAccount.user_id})
     let filter = {}
     filter["receiver_account_number"] = receiverAccountNumber
-    filter["receiver_nick_name"] = nickName;
+    if (nickName)
+    {
+        filter["receiver_nick_name"] = nickName;
+    }
+    else {
+        filter["receiver_nick_name"] = receiverUserRole.full_name
+    }
     filter["is_inside"] = isInside;
     if (!isInside)
     {
@@ -20,10 +30,7 @@ const addUserToList = async(req, res, next) => {
             filter["partner_code"] = partnerCode
         }
     }
-    let senderBankAccount = await BankAccount.findOne({user_id: req.user.user_id})
-    let senderUserRole = await UserRole.findOne({user_id: req.user.user_id})
-    let receiverBankAccount = await BankAccount.findOne({account_number: receiverAccountNumber})
-    let receiverUserRole = await UserRole.findOne({user_id: receiverBankAccount.user_id})
+
     filter["sender_account_number"] = senderBankAccount.account_number
     filter["sender_full_name"] = senderUserRole.full_name
     filter["receiver_full_name"] = receiverUserRole.full_name

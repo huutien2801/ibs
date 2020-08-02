@@ -98,7 +98,7 @@ const createBankAccount = async(req, res, next) => {
 //Truyền vô body receiveAccount, amount, mess, type
 const transferMoney = async (req, res, next) => {
     const {receiverAccountNumber, amount, message, feeType} = req.body;
-    let currentUserRole = await UserRoleDB.findOne({user_id: req.user.user_id});
+    let currentUserRole = await UserRoleDB.findOne({user_id: 40});//req.user.user_id});
     let otpCode = generateOTP();
     let resp = await sendOTPMail(currentUserRole.email, currentUserRole.full_name, otpCode);
     if (resp.status == "OK") {
@@ -134,25 +134,25 @@ const transferMoney = async (req, res, next) => {
 
 const confirmOTPTransferMoney = async(req, res, next) => {
     const {OTP} = req.body;
-    let currentUserRole = await UserRoleDB.findOne({user_id: req.user.user_id});
+    let currentUserRole = await UserRoleDB.findOne({user_id: 40});//req.user.user_id});
     filter = {}
     filter['email'] = currentUserRole.email;
 
     let otp = await OTPDB.find(filter).limit(1).sort({createdAt:-1})
     if (!otp){
-        let deleteTransferMoney = await TransferMoneyTempDB.delete({sender_user_id: currentUserRole.user_id});
+        let deleteTransferMoney = await TransferMoneyTempDB.deleteMany({sender_user_id: currentUserRole.user_id});
         return res.status(400).json({
             status: "ERROR",
             message: "Your OTP code is expired."
         })
     }
     if (otp[0].otp == OTP){
-        let data = await TransferMoneyTempDB.find({sender_user_id: currentUserRole.user_id}).limit(1).sort({created_at: -1});
+        let data = await TransferMoneyTempDB.findOne({sender_user_id: currentUserRole.user_id}).sort({created_at: -1});
         let currentBankAccount = await BankAccountDB.findOne({user_id: currentUserRole.user_id});
-        let receiverBankAccount = await BankAccountDB.findOne({account_number: data[0].receiver_account_number});
-        let handle = await handleTransfer(currentUserRole.user_id, receiverBankAccount.user_id, data[0].amount, data[0].message, data[0].fee_type, currentBankAccount.balance, receiverBankAccount.balance, currentBankAccount.account_number,  data[0].receiver_account_number, true);
+        let receiverBankAccount = await BankAccountDB.findOne({account_number: data.receiver_account_number});
+        let handle = await handleTransfer(currentUserRole.user_id, receiverBankAccount.user_id, data.amount, data.message, data.fee_type, currentBankAccount.balance, receiverBankAccount.balance, currentBankAccount.account_number,  data.receiver_account_number, true);
         if(handle.status == "OK"){
-            let deleteTransferMoney = await TransferMoneyTempDB.delete({sender_user_id: currentUserRole.user_id});
+            let deleteTransferMoney = await TransferMoneyTempDB.deleteMany({sender_user_id: currentUserRole.user_id});
             return res.status(200).json({
                 message: "Transfer money success"
         });
@@ -171,7 +171,7 @@ const confirmOTPTransferMoney = async(req, res, next) => {
 const handleTransfer = async(senderId, receiverId, amount, mess, feeType, curBalance, recBalance, senderAc, receiveAc, isInside) => {
     let curAmountBef = 0; //Tính số tiền sau khi chuyển người gửi
     let recAmountBef = 0;
-    if(type = "PAY"){
+    if(feeType == "PAY"){
         curAmountBef = curBalance - amount - FEE_TRANSFER;
         recAmountBef = recBalance + amount;
     } else {
