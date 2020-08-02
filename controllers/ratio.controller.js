@@ -20,7 +20,6 @@ const getRatio = async(req, res, next) => {
 
 const createRatio = async(req, res, next) => {
     const {month, ratio} = req.body
-    console.log(month, ratio)
     let ratioResp = await RatioDB.create({
         month,
         ratio
@@ -37,10 +36,10 @@ const createRatio = async(req, res, next) => {
 }
 
 const updateRatio = async(req, res, next) => {
-    const { ratioID, month, ratio} = req.body
+    const { ratio } = req.body
+    const { month } = req.query
 
-    let ratioResp = await RatioDB.updateOne({ratio_id: ratioID},{
-        month,
+    let ratioResp = await RatioDB.updateOne({month},{
         ratio
     })
     if (ratioResp){
