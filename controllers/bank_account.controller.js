@@ -86,7 +86,7 @@ const createBankAccount = async(req, res, next) => {
     } else {
         let depositDate = new Date();
         let redeemDate = new Date();
-        redeemDate = redeemDate.setMonth(currentTime.getMonth() + parseInt(ratioResp.month));
+        redeemDate = redeemDate.setMonth(redeemDate.getMonth() + parseInt(ratioResp.month));
         data["deposit"] = deposit;
         data["deposit_date"] = depositDate;
         data["account_number"] = generateAccountNumber();

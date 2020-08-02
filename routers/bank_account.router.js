@@ -9,6 +9,6 @@ router.post('/transfer', protect, transferMoney);
 router.post('/confirm-transfer', protect, confirmOTPTransferMoney);
 router.get('/standard', protect, getBankAccountStandard);
 router.get('/deposit', protect, getBankAccountDeposit);
-router.get('/redeem', protect, redeemDepositAccount);
+router.post('/redeem', protect, redeemDepositAccount);
 
 module.exports = router;
