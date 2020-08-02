@@ -86,7 +86,7 @@ const createBankAccount = async(req, res, next) => {
     } else {
         let depositDate = new Date();
         let redeemDate = new Date();
-        redeemDate = redeemDate.setMonth(redeemDate.getMonth() + parseInt(ratioResp.month));
+        
         data["deposit"] = deposit;
         data["deposit_date"] = depositDate;
         data["account_number"] = generateAccountNumber();
@@ -98,7 +98,7 @@ const createBankAccount = async(req, res, next) => {
                 message: "Choose wrong deposit month."
             })
         }
-
+        redeemDate = redeemDate.setMonth(redeemDate.getMonth() + parseInt(ratioResp.month));
         data["ratio_id"] = ratioResp.ratio_id;
         data["redeem"] = parseInt(deposit * ratioResp.ratio / 100) + parseInt(deposit);
 
