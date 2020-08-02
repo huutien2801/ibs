@@ -7,9 +7,8 @@ require('dotenv').config({
 const RatioSchema = mongoose.Schema({
     ratio_id:{
         type:Number,
-        required: true
     },
-    months: {
+    month: {
         type: Number,
         required: true,
         unique: true,

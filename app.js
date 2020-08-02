@@ -92,6 +92,7 @@ app.use('/api/v1/debt', require('./routers/debt.router'));
 app.use('/api/v1/exchange-money', require('./routers/exchange_money.router'));
 app.use('/api/v1/otp', require('./routers/otp.router'));
 app.use('/api/v1/client', require('./routers/client.router'));
+app.use('/api/v1/ratio', require('./routers/ratio.router'));
 
 app.use('*', (req, res) => {
   res.status(200).send({
