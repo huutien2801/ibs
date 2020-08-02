@@ -25,9 +25,15 @@ const getBankAccountStandard = async(req, res, next) => {
 }
 
 const getBankAccountDeposit = async(req, res, next) => {
-    let offset = req.query.offset;
-    let limit = req.query.limit;
-
+    let offset = parseInt(req.query.offset);
+    let limit = parseInt(req.query.limit);
+    let accountNumber = req.query.accountNumber;
+    filter = {
+        user_id: req.user.user_id
+    }
+    if (accountNumber){
+        filter['account_number'] = accountNumber
+    }
     let bankAccount = await BankAccountDB.find({user_id: req.user.user_id, type: DEPOSIT_ACCOUNT}).limit(limit ? limit : 20).skip(offset ? offset : 0)
     if (bankAccount){
         return res.status(200).json({

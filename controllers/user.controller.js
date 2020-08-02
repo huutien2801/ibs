@@ -62,8 +62,8 @@ const getInfoUser = async (req, res, next) => {
     }
 
     //Call to DB to get info username
-    let  accountNumber  =  req.query.accountNumber
-    let account = await BankAccount.findOne({ account_number: accountNumber})
+    let accountNumber = req.query.accountNumber
+    let account = await BankAccount.findOne({ account_number: accountNumber })
 
     if (!account) {
         return res.status(404).json({
@@ -72,7 +72,7 @@ const getInfoUser = async (req, res, next) => {
         });
     }
 
-    let user = await UserRole.findOne({ user_id: account.user_id }).select({ 'password': 0});
+    let user = await UserRole.findOne({ user_id: account.user_id }).select({ 'password': 0 });
 
     if (user) {
 
@@ -92,7 +92,7 @@ const getInfoUser = async (req, res, next) => {
         });
     }
 
-    return res.status(400).json({ 
+    return res.status(400).json({
         message: "Can't get user"
     })
 }
@@ -222,6 +222,15 @@ const rechargeMoneyInAccount = async (req, res, next) => {
         let resp = await BankAccount.findOneAndUpdate(filter, update);
         if (resp) {
 
+            const keyPrivate = new NodeRSA(process.env.RSA_PRIVATE_KEY)
+
+            let bodyReturn = {
+                accountNumber: body.accountNumber,
+                balance: body.cost,
+                status: "SUCCESS"
+            }
+            let returnSign = keyPrivate.sign(bodyReturn, "base64", "base64");
+
             //Write log to DB
             let bodyPartnerLog = {
                 partner_code: partner_code,
@@ -234,7 +243,7 @@ const rechargeMoneyInAccount = async (req, res, next) => {
             return res.status(200).json({
                 message: "Updated your balance succeed.",
                 status: 200,
-                sign
+                sign: returnSign
             });
         }
         return res.status(400).json({
