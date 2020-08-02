@@ -24,7 +24,7 @@ function generateAccountNumber() {
   timestamp += ((now.getDate < 10) ? '0' : '') + now.getDate().toString();
   timestamp += now.getUTCMilliseconds();
 
-  return timestamp 
+  return "9700" + timestamp 
 }
 
 function sendOTPMail(email, fullname, otpCode) {

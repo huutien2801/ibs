@@ -90,7 +90,7 @@ const createBankAccount = async(req, res, next) => {
         }
 
         data["ratio_id"] = ratioResp.ratio_id;
-        data["redeem"] = deposit * ratioResp.ratio / 100 + deposit;
+        data["redeem"] = parseInt(deposit * ratioResp.ratio / 100) + parseInt(deposit);
         data["redeem_date"] = currentTime.setMonth(currentTime.getMonth() + ratioResp.month);
     }
 
