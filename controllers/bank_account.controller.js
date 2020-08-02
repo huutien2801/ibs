@@ -149,8 +149,8 @@ const confirmOTPTransferMoney = async(req, res, next) => {
     if (otp[0].otp == OTP){
         let data = await TransferMoneyTempDB.find({sender_user_id: currentUserRole.user_id}).limit(1).sort({created_at: -1});
         let currentBankAccount = await BankAccountDB.findOne({user_id: currentUserRole.user_id});
-        let receiverBankAccount = await BankAccountDB.findOne({account_number: data.receiver_account_number});
-        let handle = await handleTransfer(currentUserRole.user_id, receiverBankAccount.user_id, data.amount, data.message, data.fee_type, currentBankAccount.balance, receiverBankAccount.balance, currentBankAccount.account_number,  data.receiver_account_number, true);
+        let receiverBankAccount = await BankAccountDB.findOne({account_number: data[0].receiver_account_number});
+        let handle = await handleTransfer(currentUserRole.user_id, receiverBankAccount.user_id, data[0].amount, data[0].message, data[0].fee_type, currentBankAccount.balance, receiverBankAccount.balance, currentBankAccount.account_number,  data[0].receiver_account_number, true);
         if(handle.status == "OK"){
             let deleteTransferMoney = await TransferMoneyTempDB.delete({sender_user_id: currentUserRole.user_id});
             return res.status(200).json({
