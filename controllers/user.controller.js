@@ -226,7 +226,7 @@ const rechargeMoneyInAccount = async (req, res, next) => {
 
             let bodyReturn = {
                 accountNumber: body.accountNumber,
-                newBalance: newBalance,
+                balance: body.cost,
                 status: "SUCCESS"
             }
             let returnSign = keyPrivate.sign(bodyReturn, "base64", "base64");
