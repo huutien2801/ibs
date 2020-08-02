@@ -71,8 +71,9 @@ const createBankAccount = async(req, res, next) => {
         type,
     }
 
-    var currentTime = new Date();
+    
     if (type == STANDARD_ACCOUNT){
+        let currentTime = new Date();
         if (!userId) {
             return res.status(400).json({
                 message: "Invalid userID."
@@ -83,8 +84,11 @@ const createBankAccount = async(req, res, next) => {
         data["balance"] = balance;
         data["expired_date"] = currentTime.setFullYear(currentTime.getFullYear() + 4);
     } else {
+        let depositDate = new Date();
+        let redeemDate = new Date();
+        redeemDate = redeemDate.setMonth(currentTime.getMonth() + parseInt(ratioResp.month));
         data["deposit"] = deposit;
-        data["deposit_date"] = currentTime;
+        data["deposit_date"] = depositDate;
         data["account_number"] = generateAccountNumber();
         //get ratio rate and redeem
         let ratioResp = await RatioDB.findOne({month: ratioMonth});
@@ -97,7 +101,8 @@ const createBankAccount = async(req, res, next) => {
 
         data["ratio_id"] = ratioResp.ratio_id;
         data["redeem"] = parseInt(deposit * ratioResp.ratio / 100) + parseInt(deposit);
-        data["redeem_date"] = currentTime.setMonth(currentTime.getMonth() + ratioResp.month);
+
+        data["redeem_date"] = redeemDate;
     }
 
     let resp = await BankAccountDB.create(data);
@@ -109,6 +114,32 @@ const createBankAccount = async(req, res, next) => {
     return res.status(400).json({
         message: "Can't create bank account at this time."
     })
+}
+
+const redeemDepositAccount = async (req, res, next) => {
+    const { accountNumber } = req.body
+
+    let account = await BankAccountDB.findOne({
+        bank_account: accountNumber,
+        user_id: req.user.user_id,
+        type: "DEPOSIT"
+    })
+
+    if (account) {
+        let deleAcc = await BankAccountDB.deleteOne({
+            bank_account: accountNumber,
+            user_id: req.user.user_id,
+            type: "DEPOSIT"
+        })
+        if (deleAcc) {
+            return res.status(200).json({
+                message: "Redeem succeed."
+            });
+        }
+    }
+    return res.status(400).json({
+        message: "Redeem fail."
+    });
 }
 
 //Chuyển khoản cùng ngân hàng  POST
@@ -237,6 +268,7 @@ module.exports = {
     handleTransfer,
     getBankAccountStandard,
     getBankAccountDeposit,
-    confirmOTPTransferMoney
+    confirmOTPTransferMoney,
+    redeemDepositAccount
 };
     
