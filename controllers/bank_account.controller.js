@@ -61,13 +61,18 @@ const createBankAccount = async(req, res, next) => {
     }
 
     let data = {
-        user_id: parseInt(userId),
+        user_id: filter['user_id'],
         account_number: "9700" + user.identity_number,
         type,
     }
 
     var currentTime = new Date();
     if (type == STANDARD_ACCOUNT){
+        if (!userId) {
+            return res.status(400).json({
+                message: "Invalid userID."
+            })
+        }
         data["pin"] = generatePIN();
         data["balance"] = balance;
         data["expired_date"] = currentTime.setFullYear(currentTime.getFullYear() + 4);
@@ -76,17 +81,17 @@ const createBankAccount = async(req, res, next) => {
         data["deposit_date"] = currentTime;
 
         //get ratio rate and redeem
-        let ratioResp = await RatioDB.findOne({months: ratioMonth});
+        let ratioResp = await RatioDB.findOne({month: ratioMonth});
 
-        if (ratioMonth == null){
+        if (!ratioResp && ratioResp.month){
             return res.status(400).json({
                 message: "Choose wrong deposit month."
             })
         }
 
         data["ratio_id"] = ratioResp.ratio_id;
-        data["redeem"] = deposit * ratioResp.ratio / 100;
-        data["redeem_date"] = currentTime.setMonth(currentTime.getMonth() + ratioResp.months);
+        data["redeem"] = deposit * ratioResp.ratio / 100 + deposit;
+        data["redeem_date"] = currentTime.setMonth(currentTime.getMonth() + ratioResp.month);
     }
 
     let resp = await BankAccountDB.create(data);
