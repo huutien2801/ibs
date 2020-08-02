@@ -10,7 +10,7 @@ const transferMoneyTempSchema = mongoose.Schema(
             required: true
         },
         receiver_account_number: {
-            type: String,
+            type: Number,
             required: true
         },
         amount: {
