@@ -35,7 +35,7 @@ const getBankAccountDeposit = async(req, res, next) => {
     if (accountNumber){
         filter['account_number'] = accountNumber
     }
-    let bankAccount = await BankAccountDB.find(filter).limit(limit ? limit : 20).skip(offset ? offset : 0)
+    let bankAccount = await BankAccountDB.find(filter).sort({register_date: -1}).limit(limit ? limit : 20).skip(offset ? offset : 0)
     if (bankAccount){
         return res.status(200).json({
             message: "Get bank deposit account successful.",

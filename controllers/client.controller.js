@@ -124,6 +124,12 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
    if (otp[0].otp == OTP) {
       let ts = Date.now();
       let dataTemp = await TransferMoneyTempDB.findOne({ sender_user_id: currentUserRole.user_id }).sort({ created_at: -1 });
+      if (dataTemp.amount > currentBankAccount.balance){
+        return res.status(400).json({
+          message: "Your account don't have enough money,",
+          errCode: "LACKMONEY",
+       })
+      }
       let finalAmount = 0
       let data = {
          sentUserId: currentBankAccount.account_number, // của ng gửi

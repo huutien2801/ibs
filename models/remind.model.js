@@ -16,6 +16,12 @@ const RemindSchema = mongoose.Schema({
         type:Number,
         required: true
     },
+    reminder_full_name:{
+        type:String
+    },
+    reminded_full_name:{
+        type:String,
+    },
     message:{
         type:String
     },

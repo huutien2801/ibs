@@ -3,6 +3,7 @@ const BankAccountDB = require('../models/bank_account.model');
 
 const { STANDARD_ACCOUNT, FEE_TRANSFER } = require('../utils/util')
 const { handleTransfer } = require('./bank_account.controller');
+const UserRoleDB = require('../models/user_role.model');
 
 require('dotenv').config({
     path: './config/config.env',
@@ -13,16 +14,23 @@ require('dotenv').config({
 const createRemind = async (req, res, next) => {
     const { reminded, mess, debt } = req.body
     let currentAccount = await BankAccountDB.findOne({ user_id: req.user.user_id, type: STANDARD_ACCOUNT })
-
-    if (currentAccount == null) {
+    if (!currentAccount) {
         return res.status(400).json({
             message: "Can't find bank account of this user"
+        })
+    }
+    let remindedUser = await UserRoleDB.findOne({account_number: reminded});
+    if (!remindedUser){
+        return res.status(400).json({
+            message: "Can't find bank account of reminded account."
         })
     }
 
     let resp = await RemindDB.create({
         reminder_account_number: currentAccount.account_number,
+        reminder_full_name: req.user.full_name,
         reminded_account_number: reminded,
+        reminded_full_name: remindedUser.full_name,
         message: mess,
         debt: debt,
         status: "UNDONE"
@@ -40,19 +48,19 @@ const createRemind = async (req, res, next) => {
 
 //Lấy danh sách nhắc nợ do bản thân tạo GET
 const getReminder = async (req, res, next) => {
-    let startDate = req.query.start;
-    let endDate = req.query.end;
+    // let startDate = req.query.start;
+    // let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
 
     let data = {};
-    if (startDate && endDate) {
-        data = {
-            $where: function () {
-                return this.updated_date > startDate && this.updated_date < endDate;
-            },
-        };
-    }
+    // if (startDate && endDate) {
+    //     data = {
+    //         $where: function () {
+    //             return this.updated_date > startDate && this.updated_date < endDate;
+    //         },
+    //     };
+    // }
     let currentAccount = await BankAccountDB.findOne({ user_id: req.user.user_id });
     if (currentAccount == null) {
         return res.status(400).json({
@@ -64,7 +72,7 @@ const getReminder = async (req, res, next) => {
 
     let total = await RemindDB.count(data);
 
-    let resp = await RemindDB.find(data).limit(limit ? limit : 20)
+    let resp = await RemindDB.find(data).sort({created_date:-1}).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
 
     if (resp) {
@@ -81,20 +89,69 @@ const getReminder = async (req, res, next) => {
 }
 
 //Lấy danh sách bị người khác nhắc GET
+const getAllRemind = async (req, res, next) => {
+    // let startDate = req.query.start;
+    // let endDate = req.query.end;
+    let q = JSON.parse(req.query.q);
+    let limit = parseInt(req.query.limit);
+    let skip = parseInt(req.query.offset);
+
+    let currentAccount = await BankAccountDB.findOne({ user_id: req.user.user_id });
+    if (currentAccount == null) {
+        return res.status(400).json({
+            message: "Can't get current account"
+        });
+    }
+
+    let data = {};
+    if (q.type){
+        switch (q.type){
+            case "REMINDER":
+                data['reminder_account_number'] = currentAccount.account_number;
+                break;
+            case "REMINDED":
+                data['reminded_account_number'] = currentAccount.account_number;
+                break;
+            default:
+                break;
+        }
+    }
+
+    if (q.status){
+        data['status'] = q.status;
+    }
+
+    let total = await RemindDB.count(data);
+
+    let resp = await RemindDB.find(data).sort({created_date:-1}).limit(limit ? limit : 20)
+        .skip(skip ? skip : 0);
+    if (resp) {
+        return res.status(200).json({
+            message: "Get reminded successfully",
+            data: resp,
+            total
+        })
+    }
+
+    return res.status(400).json({
+        message: "Can't get reminded"
+    })
+}
+
 const getReminded = async (req, res, next) => {
-    let startDate = req.query.start;
-    let endDate = req.query.end;
+    // let startDate = req.query.start;
+    // let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
 
     let data = {};
-    if (startDate && endDate) {
-        data = {
-            $where: function () {
-                return this.updated_date > startDate && this.updated_date < endDate;
-            },
-        };
-    }
+    // if (startDate && endDate) {
+    //     data = {
+    //         $where: function () {
+    //             return this.updated_date > startDate && this.updated_date < endDate;
+    //         },
+    //     };
+    // }
     let currentAccount = await BankAccountDB.findOne({ user_id: req.user.user_id });
     if (currentAccount == null) {
         return res.status(400).json({
@@ -106,7 +163,7 @@ const getReminded = async (req, res, next) => {
 
     let total = await RemindDB.count(data);
 
-    let resp = await RemindDB.find(data).limit(limit ? limit : 20)
+    let resp = await RemindDB.find(data).sort({created_date:-1}).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
 
     if (resp) {
@@ -190,5 +247,6 @@ module.exports = {
     getReminder,
     getReminded,
     cancelRemind,
-    payRemind
+    payRemind,
+    getAllRemind
 };
