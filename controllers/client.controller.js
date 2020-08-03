@@ -161,7 +161,7 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
          BankAccount.findOneAndUpdate({ account_number: currentBankAccount.account_number }, { balance: parseInt(newBalance) }, function (err1, response1) {
             if (!err1) {
                ExchangeMoney.create({
-                  partnerCode: "SAPHASANBank",
+                  partnerCode: dataTemp.partner_code,
                   sender_id: currentUserRole.user_id,
                   money: dataTemp.amount,
                   message: dataTemp.message,
