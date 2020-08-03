@@ -151,7 +151,7 @@ const confirmOTPTransferMoneyQLBank = async(req, res, next) => {
       data,
       headers: {
           ts,
-          partnerCode: dateTemp.partner_code,
+          partnerCode: dataTemp.partner_code,
           hashedSign: hashStr,
           sign
       }
