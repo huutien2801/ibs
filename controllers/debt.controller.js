@@ -12,25 +12,19 @@ require('dotenv').config({
 //Tạo nhắc nợ POST
 //Truyền vô body reminded, mess, debt
 const createRemind = async (req, res, next) => {
-    const { reminded, mess, debt } = req.body
+    const { remindedAccount, remindedName, mess, debt } = req.body
     let currentAccount = await BankAccountDB.findOne({ user_id: req.user.user_id, type: STANDARD_ACCOUNT })
     if (!currentAccount) {
         return res.status(400).json({
             message: "Can't find bank account of this user"
         })
     }
-    let remindedUser = await UserRoleDB.findOne({account_number: reminded});
-    if (!remindedUser){
-        return res.status(400).json({
-            message: "Can't find bank account of reminded account."
-        })
-    }
 
     let resp = await RemindDB.create({
         reminder_account_number: currentAccount.account_number,
         reminder_full_name: req.user.full_name,
-        reminded_account_number: reminded,
-        reminded_full_name: remindedUser.full_name,
+        reminded_account_number: remindedAccount,
+        reminded_full_name: remindedName,
         message: mess,
         debt: debt,
         status: "UNDONE"
