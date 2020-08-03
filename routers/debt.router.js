@@ -10,6 +10,6 @@ router.get('/reminder', protect, getReminder);
 router.get('/reminded', protect, getReminded);
 router.put('/cancel', protect, cancelRemind);
 router.post('/pay', protect, payRemind);
-router.get('', protect, getAllRemind);
+router.get('/get-all', protect, getAllRemind);
 
 module.exports = router;
