@@ -161,7 +161,7 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
          BankAccount.findOneAndUpdate({ account_number: currentBankAccount.account_number }, { balance: parseInt(newBalance) }, function (err1, response1) {
             if (!err1) {
                ExchangeMoney.create({
-                  partnerCode: dataTemp.partner_code,
+                  partner_code: dataTemp.partner_code,
                   sender_id: currentUserRole.user_id,
                   money: dataTemp.amount,
                   message: dataTemp.message,
@@ -190,9 +190,56 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
    }
 }
 
+const getClientName = async (req, res, next) => {
+  const {partnerCode, accountNumber} = req.query;
 
+  let name = await getClientInfo(partnerCode, accountNumber);
+  if(name){
+    return res.status(200).json({
+      message: "Get info succeed.",
+      data: name,
+    })
+  }
 
+  return res.status(400).json({
+    message: "Get info fail.",
+  })
+}
 
+async function getClientInfo(partnerCode, accountNumber) {
+    let name = ''
+    switch (partnerCode) {
+        case "SAPHASANBank":
+            name = await getSAPPHASANBANKInfo(accountNumber)
+            break;
+        default:
+            break;
+    }
+    return name
+}
+
+async function getSAPPHASANBANKInfo(accountNumber) {
+    let ts = Date.now();
+    let data = {
+        accountNumber: accountNumber
+    }
+    let hashStr = md5(ts + data + md5("dungnoiaihet"));
+    let name = ''
+    let resp = await axios({
+        method: 'post',
+        url: 'https://qlbank1.herokuapp.com/api/external/customer',
+        data,
+        headers: {
+            ts,
+            partnerCode: "3TBank",
+            hashedSign: hashStr,
+        }
+    })
+    if(resp && !resp.error){
+        name = resp.data.name
+    }
+    return name
+}
 
 
 
@@ -261,5 +308,6 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
 module.exports = {
    getAccountInfoQLBank,
    transferMoneyQLBank,
-   confirmOTPTransferMoneyQLBank
+   confirmOTPTransferMoneyQLBank,
+   getClientName
 }
