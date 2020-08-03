@@ -133,7 +133,7 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
          content: dataTemp.message
       }
       if (dataTemp.fee_type == "PAY") {
-         finalAmount = parseInt(dataTemp.amount) - FEE_TRANSFER_BANK
+         finalAmount = parseInt(dataTemp.amount) + FEE_TRANSFER_BANK
          data["isReceiverPaid"] = false
       }
       else {
