@@ -103,7 +103,7 @@ const transferMoneyQLBank = async (req, res, next) => {
 
 
 const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
-   const { OTP } = req.body;
+   const { OTP, receiverName } = req.body;
    let currentUserRole = await UserRoleDB.findOne({ user_id: req.user.user_id });
    let currentBankAccount = await BankAccount.findOne({ user_id: req.user.user_id });
    filter = {}
@@ -137,7 +137,8 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
          data["isReceiverPaid"] = false
       }
       else {
-         data["isReceiverPaid"] = true
+        finalAmount  = parseInt(dataTemp.amount)
+        data["isReceiverPaid"] = true
       }
       let hashStr = md5(ts + data + md5("dungnoiaihet"))
       const keyPrivate = new NodeRSA(process.env.RSA_PRIVATE_KEY)
@@ -168,6 +169,8 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
                   is_inside: false,
                   receiver_account_number: dataTemp.receiver_account_number,
                   sender_account_number: currentBankAccount.account_number,
+                  sender_full_name: currentUserRole.full_name,
+                  receiver_full_name: receiverName,
                   sign: resp.data.sign
                }, function (err2, resp) {
                   if (!err2) {
