@@ -15,177 +15,176 @@ const { generateAccountNumber, generatePIN, generateOTP, sendOTPMail, FEE_TRANSF
 
 //Hai API để call sang service khác lấy thông tin khách hàng
 const getAccountInfoSAPHASANBANK = async (req, res, next) => {
-  axios({
-    method: 'post',
-    url: '/user/12345',
-    data: {
-      firstName: 'Fred',
-      lastName: 'Flintstone'
-    },
-    headers: {
+   axios({
+      method: 'post',
+      url: '/user/12345',
+      data: {
+         firstName: 'Fred',
+         lastName: 'Flintstone'
+      },
+      headers: {
 
-    }
-  });
+      }
+   });
 }
 
 const getAccountInfoQLBank = async (req, res, next) => {
-  let ts = Date.now();
-  let data = {
-    accountNumber: req.query.accountNumber
-  }
-  let hashStr = md5(ts + data + md5("dungnoiaihet"));
-  axios({
-    method: 'post',
-    url: 'https://qlbank1.herokuapp.com/api/external/customer',
-    data,
-    headers: {
-      ts,
-      partnerCode: "3TBank",
-      hashedSign: hashStr,
-    }
-  })
-    .then(function (response) {
-      return res.status(200).json({
-        message: "Get succeeded",
-        data: response.data
+   let ts = Date.now();
+   let data = {
+      accountNumber: req.query.accountNumber
+   }
+   let hashStr = md5(ts + data + md5("dungnoiaihet"));
+   axios({
+      method: 'post',
+      url: 'https://qlbank1.herokuapp.com/api/external/customer',
+      data,
+      headers: {
+         ts,
+         partnerCode: "3TBank",
+         hashedSign: hashStr,
+      }
+   })
+      .then(function (response) {
+         return res.status(200).json({
+            message: "Get succeeded",
+            data: response.data
+         })
+      }).catch(function (error) {
+         return res.status(400).json({
+            message: "Get failed" + error
+         })
       })
-    }).catch(function (error) {
-      return res.status(400).json({
-        message: "Get failed" + error
-      })
-    })
 }
 
 const transferMoneyQLBank = async (req, res, next) => {
-  const { receiverAccountNumber, amount, message, feeType, partnerCode } = req.body;
-  switch (partnerCode) {
-    case "SAPHASANBank":
-      break;
-    default:
-      return res.status(400).json({
-        message: "Your bank is not my partner. Please connect to my bank and call API later"
+   const { receiverAccountNumber, amount, message, feeType, partnerCode } = req.body;
+   switch (partnerCode) {
+      case "SAPHASANBank":
+         break;
+      default:
+         return res.status(400).json({
+            message: "Your bank is not my partner. Please connect to my bank and call API later"
+         })
+   }
+   let currentUserRole = await UserRoleDB.findOne({ user_id: req.user.user_id });
+   let otpCode = generateOTP();
+   let resp = await sendOTPMail(currentUserRole.email, currentUserRole.full_name, otpCode);
+   if (resp.status == "OK") {
+      await OTPDB.create({
+         email: currentUserRole.email,
+         otp: otpCode
       })
-  }
-  let currentUserRole = await UserRoleDB.findOne({ user_id: req.user.user_id });
-  let otpCode = generateOTP();
-  let resp = await sendOTPMail(currentUserRole.email, currentUserRole.full_name, otpCode);
-  if (resp.status == "OK") {
-    await OTPDB.create({
-      email: currentUserRole.email,
-      otp: otpCode
-    })
-  } else {
-    return res.status(400).json({
-      message: "Error when sending email"
-    })
-  }
-  let temp = await TransferMoneyTempDB.create({
-    sender_user_id: currentUserRole.user_id,
-    receiver_account_number: parseInt(receiverAccountNumber),
-    amount,
-    message,
-    fee_type: feeType,
-    partner_code: partnerCode
-  })
-  if (!temp) {
-    return res.status(400).json({
-      message: "Error when transfering money"
-    })
-  }
-  else {
-    return res.status(200).json({
-      message: "OTP sent",
-      status: "SENT"
-    })
-  }
+   } else {
+      return res.status(400).json({
+         message: "Error when sending email"
+      })
+   }
+   let temp = await TransferMoneyTempDB.create({
+      sender_user_id: currentUserRole.user_id,
+      receiver_account_number: parseInt(receiverAccountNumber),
+      amount,
+      message,
+      fee_type: feeType,
+      partner_code: partnerCode
+   })
+   if (!temp) {
+      return res.status(400).json({
+         message: "Error when transfering money"
+      })
+   }
+   else {
+      return res.status(200).json({
+         message: "OTP sent",
+         status: "SENT"
+      })
+   }
 }
 
 
 
 const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
-  const { OTP } = req.body;
-  let currentUserRole = await UserRoleDB.findOne({ user_id: req.user.user_id });
-  let currentBankAccount = await BankAccount.findOne({ user_id: req.user.user_id });
-  filter = {}
-  filter['email'] = currentUserRole.email;
-  let otp = await OTPDB.find(filter).limit(1).sort({ createdAt: -1 })
-  if (!otp) {
-    let deleteTransferMoney = await TransferMoneyTempDB.deleteMany({ sender_user_id: currentUserRole.user_id });
-    return res.status(400).json({
-      status: "ERROR",
-      message: "Your OTP code is expired."
-    })
-  }
-  if (otp[0].otp != OTP) {
-    return res.status(400).json({
-      message: "OTP not matched",
-    })
-  }
-  if (otp[0].otp == OTP) {
-    let ts = Date.now();
-    let dataTemp = await TransferMoneyTempDB.findOne({ sender_user_id: currentUserRole.user_id }).sort({ created_at: -1 });
-    let finalAmount = 0
-    let data = {
-      sentUserId: currentBankAccount.account_number, // của ng gửi
-      sentUserName: currentUserRole.full_name, // của ng gửi
-      accountNumber: dataTemp.receiver_account_number, // account number của ng nhận
-      amount: parseInt(dataTemp.amount),
-      content: dataTemp.message
-    }
-    if (dataTemp.fee_type == "PAY") {
-      finalAmount = parseInt(dataTemp.amount) - FEE_TRANSFER_BANK
-      data["isReceiverPaid"] = false
-    }
-    else {
-      data["isReceiverPaid"] = true
-    }
-    let hashStr = md5(ts + data + md5("dungnoiaihet"))
-    const keyPrivate = new NodeRSA(process.env.RSA_PRIVATE_KEY)
-    let sign = keyPrivate.sign(data, "base64", "base64")
-
-    let resp = await axios({
-      method: 'post',
-      url: 'https://qlbank1.herokuapp.com/api/external/transaction',
-      data,
-      headers: {
-        ts,
-        partnerCode: '3TBank',
-        hashedSign: hashStr,
-        sign
-      }
-    })
-
-    if (resp && !resp.error) {
-      let newBalance = currentBankAccount.balance - parseInt(finalAmount)
-      BankAccount.findOneAndUpdate({ account_number: currentBankAccount.accountNumber }, { balance: parseInt(newBalance) }, function (err1, response1) {
-        if (!err1) {
-          ExchangeMoney.create({
-            partnerCode: "SAPHASANBank",
-            sender_id: currentUserRole.user_id,
-            money: dataTemp.amount,
-            message: dataTemp.message,
-            fee_type: dataTemp.fee_type,
-            is_inside: false,
-            receiver_account_number: dataTemp.receiver_account_number,
-            sender_account_number: currentBankAccount.account_number,
-            sign: resp.data.sign
-          }, function (err2, resp) {
-            if (!err2) {
-              return res.status(200).json({
-                message: "Transfer succeeded",
-                dataRes: resp.data
-              })
-            }
-          })
-        }
+   const { OTP } = req.body;
+   let currentUserRole = await UserRoleDB.findOne({ user_id: req.user.user_id });
+   let currentBankAccount = await BankAccount.findOne({ user_id: req.user.user_id });
+   filter = {}
+   filter['email'] = currentUserRole.email;
+   let otp = await OTPDB.find(filter).limit(1).sort({ createdAt: -1 })
+   if (!otp) {
+      let deleteTransferMoney = await TransferMoneyTempDB.deleteMany({ sender_user_id: currentUserRole.user_id });
+      return res.status(400).json({
+         status: "ERROR",
+         message: "Your OTP code is expired."
       })
-    }
+   }
+   if (otp[0].otp != OTP) {
+      return res.status(400).json({
+         message: "OTP not matched",
+      })
+   }
+   if (otp[0].otp == OTP) {
+      let ts = Date.now();
+      let dataTemp = await TransferMoneyTempDB.findOne({ sender_user_id: currentUserRole.user_id }).sort({ created_at: -1 });
+      let finalAmount = 0
+      let data = {
+         sentUserId: currentBankAccount.account_number, // của ng gửi
+         sentUserName: currentUserRole.full_name, // của ng gửi
+         accountNumber: dataTemp.receiver_account_number, // account number của ng nhận
+         amount: parseInt(dataTemp.amount),
+         content: dataTemp.message
+      }
+      if (dataTemp.fee_type == "PAY") {
+         finalAmount = parseInt(dataTemp.amount) - FEE_TRANSFER_BANK
+         data["isReceiverPaid"] = false
+      }
+      else {
+         data["isReceiverPaid"] = true
+      }
+      let hashStr = md5(ts + data + md5("dungnoiaihet"))
+      const keyPrivate = new NodeRSA(process.env.RSA_PRIVATE_KEY)
+      let sign = keyPrivate.sign(data, "base64", "base64")
 
-    return res.status(400).json({
-      message: "Transfer failed",
-      error
-    })
-  }
+      let resp = await axios({
+         method: 'post',
+         url: 'https://qlbank1.herokuapp.com/api/external/transaction',
+         data,
+         headers: {
+            ts,
+            partnerCode: '3TBank',
+            hashedSign: hashStr,
+            sign
+         }
+      })
+
+      if (resp && !resp.error) {
+         let newBalance = currentBankAccount.balance - parseInt(finalAmount)
+         BankAccount.findOneAndUpdate({ account_number: currentBankAccount.accountNumber }, { balance: parseInt(newBalance) }, function (err1, response1) {
+            if (!err1) {
+               ExchangeMoney.create({
+                  partnerCode: "SAPHASANBank",
+                  sender_id: currentUserRole.user_id,
+                  money: dataTemp.amount,
+                  message: dataTemp.message,
+                  fee_type: dataTemp.fee_type,
+                  is_inside: false,
+                  receiver_account_number: dataTemp.receiver_account_number,
+                  sender_account_number: currentBankAccount.account_number,
+                  sign: resp.data.sign
+               }, function (err2, resp) {
+                  if (!err2) {
+                     return res.status(200).json({
+                        message: "Transfer succeeded",
+                        dataRes: resp.data
+                     })
+                  }
+               })
+            }
+         })
+      } else {
+         return res.status(400).json({
+            message: "Transfer failed",
+         })
+      }
+   }
 }
 
 
@@ -257,7 +256,7 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
 // }
 
 module.exports = {
-  getAccountInfoQLBank,
-  transferMoneyQLBank,
-  confirmOTPTransferMoneyQLBank
+   getAccountInfoQLBank,
+   transferMoneyQLBank,
+   confirmOTPTransferMoneyQLBank
 }
