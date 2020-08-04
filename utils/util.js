@@ -47,7 +47,7 @@ function sendRemindMail(email, senderName, receiveName) {
   var mailOptions = {
     from: "lathoai3107@gmail.com",
     to: email,
-    subject: "Email báo nợ",
+    subject: "Email thông báo nhắc nợ",
     text: "Kính gửi " + receiveName + ",\n\nBạn vừa được thông báo trả nợ từ " + senderName + "\nVui lòng đăng nhập vào hệ thống để kiểm tra và thanh toán nợ trong hạn.",
   };
   transporter.sendMail(mailOptions, (error, info) => {
