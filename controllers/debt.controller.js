@@ -207,16 +207,26 @@ const cancelRemind = async (req, res, next) => {
 const payRemind = async (req, res, next) => {
     const { remindId, message } = req.body;
 
-    let curUser = await BankAccountDB.findOne({ user_id: req.user.user_id, type: STANDARD_ACCOUNT }); // Note lại để test
+    let curUser = await BankAccountDB.findOne({ user_id: req.user.user_id, type: STANDARD_ACCOUNT });
+    if (!curUser){
+        return res.status(400).json({
+            message: "Your account don't have bank account."
+        })
+    }
 
     let remind = await RemindDB.findOne({remind_id: remindId, status:"UNDONE"});
     if (!remind){
         return res.status(400).json({
-            message: remind.message
+            message: "Can't find remind."
         })
     }
 
     let recUser = await BankAccountDB.findOne({ account_number: remind.reminder_account_number, type: STANDARD_ACCOUNT });
+    if (!recUser){
+        return res.status(400).json({
+            message: "Can't find reminder bank account."
+        })
+    }
 
     if (curUser.balance < remind.debt){
         return res.status(400).json({
@@ -224,17 +234,17 @@ const payRemind = async (req, res, next) => {
         })
     }
 
-    if (remind.debt == debt){
-        let resp = await handleTransfer(curUser.user_id, recUser.user_id, remind.debt, message, "PAY", curUser.balance, recUser.balance, curUser.account_number, recUser.account_number, true);
-        if (resp.status == "OK") {
-            resp = await RemindDB.updateOne({ remind_id: remindId }, { status: "DONE" });
-            if (resp) {
-                return res.status(200).json({
-                    message: "Pay remind successfully."
-                });
-            }
+    
+    let resp = await handleTransfer(curUser.user_id, recUser.user_id, remind.debt, message, "PAY", curUser.balance, recUser.balance, curUser.account_number, recUser.account_number, true);
+    if (resp.status == "OK") {
+        resp = await RemindDB.updateOne({ remind_id: remindId }, { status: "DONE" });
+        if (resp) {
+            return res.status(200).json({
+                message: "Pay remind successfully."
+            });
         }
     }
+    
 
     return res.status(400).json({
         message: "Pay remind fail."

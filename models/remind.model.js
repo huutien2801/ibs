@@ -8,11 +8,11 @@ const RemindSchema = mongoose.Schema({
     remind_id:{
         type:Number,
     },
-    reminder_account_number:{
+    reminder_account_number:{//Người tạo 
         type:Number,
         required: true
     },
-    reminded_account_number:{
+    reminded_account_number:{//Người bị nhắc
         type:Number,
         required: true
     },
