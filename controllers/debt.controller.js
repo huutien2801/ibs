@@ -1,7 +1,7 @@
 const RemindDB = require('../models/remind.model');
 const BankAccountDB = require('../models/bank_account.model');
 
-const { STANDARD_ACCOUNT, FEE_TRANSFER } = require('../utils/util')
+const { STANDARD_ACCOUNT, FEE_TRANSFER, sendRemindMail } = require('../utils/util')
 const { handleTransfer } = require('./bank_account.controller');
 const UserRoleDB = require('../models/user_role.model');
 
@@ -30,6 +30,7 @@ const createRemind = async (req, res, next) => {
         status: "UNDONE"
     })
     if (resp) {
+        await sendRemindMail(req.user.email, req.user.full_name, remindedName);
         return res.status(200).json({
             message: "Create successfully",
         })

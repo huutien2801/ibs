@@ -42,10 +42,27 @@ function sendOTPMail(email, fullname, otpCode) {
   return { status: "OK", message: "Send email successful" }
 }
 
+
+function sendRemindMail(email, senderName, receiveName) {
+  var mailOptions = {
+    from: "lathoai3107@gmail.com",
+    to: email,
+    subject: "Email báo nợ",
+    text: "Kính gửi " + receiveName + ",\n\nBạn vừa được thông báo trả nợ từ " + senderName + "\nVui lòng đăng nhập vào hệ thống để kiểm tra và thanh toán nợ trong hạn.",
+  };
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return { status: "ERROR", message: "Can't sen't message at this time. " + error }
+    }
+  });
+  return { status: "OK", message: "Send email successful" }
+}
+
 module.exports = {
   generatePIN,
   generateOTP,
   sendOTPMail,
+  sendRemindMail,
   generateAccountNumber,
   FEE_TRANSFER: 1000,
   FEE_TRANSFER_BANK: 3000,
