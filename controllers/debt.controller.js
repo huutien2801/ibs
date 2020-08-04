@@ -19,6 +19,13 @@ const createRemind = async (req, res, next) => {
             message: "Can't find bank account of this user"
         })
     }
+    let remindedBank = await BankAccountDB.findOne({account_number: remindedAccount, type: STANDARD_ACCOUNT});
+    if (! remindedBank){
+        return res.status(400).json({
+            message: "Reminded account number invalid."
+        })
+    }
+    let remindedUser = await UserRoleDB.findOne({user_id: remindedBank.user_id});
 
     let resp = await RemindDB.create({
         reminder_account_number: currentAccount.account_number,
@@ -30,7 +37,7 @@ const createRemind = async (req, res, next) => {
         status: "UNDONE"
     })
     if (resp) {
-        await sendRemindMail(req.user.email, req.user.full_name, remindedName);
+        await sendRemindMail(remindedUser.email, req.user.full_name, remindedName);
         return res.status(200).json({
             message: "Create successfully",
         })
