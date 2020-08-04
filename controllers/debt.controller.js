@@ -201,10 +201,9 @@ const cancelRemind = async (req, res, next) => {
 //Thanh toán nhắc nợ POST
 //Truyền vô body remindId, reminderAccountNumber, debt, message
 const payRemind = async (req, res, next) => {
-    const { remindId, reminderAccountNumber, debt, message } = req.body;
+    const { remindId, message } = req.body;
 
     let curUser = await BankAccountDB.findOne({ user_id: req.user.user_id, type: STANDARD_ACCOUNT }); // Note lại để test
-    let recUser = await BankAccountDB.findOne({ account_number: reminderAccountNumber, type: STANDARD_ACCOUNT });
 
     let remind = await RemindDB.findOne({remind_id: remindId, status:"UNDONE"});
     if (!remind){
@@ -213,6 +212,8 @@ const payRemind = async (req, res, next) => {
         })
     }
 
+    let recUser = await BankAccountDB.findOne({ account_number: remind.reminder_account_number, type: STANDARD_ACCOUNT });
+
     if (curUser.balance < remind.debt){
         return res.status(400).json({
             message: "Pay remind fail. Your account don't have enough money."
@@ -220,7 +221,7 @@ const payRemind = async (req, res, next) => {
     }
 
     if (remind.debt == debt){
-        let resp = await handleTransfer(curUser.user_id, recUser.user_id, debt, message, "PAY", curUser.balance, recUser.balance, curUser.account_number, recUser.account_number, true);
+        let resp = await handleTransfer(curUser.user_id, recUser.user_id, remind.debt, message, "PAY", curUser.balance, recUser.balance, curUser.account_number, recUser.account_number, true);
         if (resp.status == "OK") {
             resp = await RemindDB.updateOne({ remind_id: remindId }, { status: "DONE" });
             if (resp) {
