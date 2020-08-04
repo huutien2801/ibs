@@ -91,7 +91,7 @@ const getAllRemind = async (req, res, next) => {
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
 
-    let currentAccount = await BankAccountDB.findOne({ user_id: 38});//req.user.user_id });
+    let currentAccount = await BankAccountDB.findOne({ user_id: req.user.user_id });
     if (currentAccount == null) {
         return res.status(400).json({
             message: "Can't get current account"
