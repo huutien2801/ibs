@@ -4,7 +4,8 @@ const UserRole = require('../models/user_role.model')
 const Remind = require('../models/remind.model');
 const PartnerDB = require('../models/partner.model');
 const { EXCHANGE_TYPE_ALL, EXCHANGE_TYPE_SEND, EXCHANGE_TYPE_RECEIVE, EXCHANGE_TYPE_DEBT } = require('../utils/util');
-const { first } = require('lodash');
+const { first, filter } = require('lodash');
+const { sign } = require('crypto');
 
 require('dotenv').config({
     path: './config/config.env',
@@ -138,14 +139,17 @@ const getRecMoney = async (req, res, next) => {
         sum += resp.money
     })
 
+    let sumMonthFilter = filterRec;
+    sumMonthFilter['created_time_second'] = {$gte: firstDay.getTime(), $lte: today.getTime()};
     let today = new Date();
     let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     let sumMonth = await ExchangeMoneyDB.aggregate([
-        { $match: { created_time_second: {$gte: firstDay.getTime(), $lte: today.getTime()} } },
+        { $match: sumMonthFilter },
         { $group: { _id: null, amount: { $sum: "$money" } } }
     ])
 
     let sumTotal = await ExchangeMoneyDB.aggregate([
+        { $match: filterRec},
         { $group: { _id: null, amount: { $sum: "$money" } } }
     ])
 
@@ -218,14 +222,17 @@ const getSenMoney = async (req, res, next) => {
         sum += resp.money
     })
     
+    let sumMonthFilter = filterRec;
+    sumMonthFilter['created_time_second'] = {$gte: firstDay.getTime(), $lte: today.getTime()};
     let today = new Date();
     let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     let sumMonth = await ExchangeMoneyDB.aggregate([
-        { $match: { created_time_second: {$gte: firstDay.getTime(), $lte: today.getTime()} } },
+        { $match: sumMonthFilter },
         { $group: { _id: null, amount: { $sum: "$money" } } }
     ])
 
     let sumTotal = await ExchangeMoneyDB.aggregate([
+        { $match: filterRec},
         { $group: { _id: null, amount: { $sum: "$money" } } }
     ])
 
@@ -460,12 +467,15 @@ const getAllHistoryAdmin = async (req, res, next) => {
 
     let today = new Date();
     let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    let sumMonthFilter = filter;
+    sumMonthFilter['created_time_second'] = { $gte: firstDay.getTime(), $lte: today.getTime() }
     let sumMonth = await ExchangeMoneyDB.aggregate([
-        { $match: { created_time_second: { $gte: firstDay.getTime(), $lte: today.getTime() } } },
+        { $match: sumMonthFilter },
         { $group: { _id: null, amount: { $sum: "$money" } } }
     ])
 
     let sumTotal = await ExchangeMoneyDB.aggregate([
+        {$match: filter},
         { $group: { _id: null, amount: { $sum: "$money" } } }
     ])
 
