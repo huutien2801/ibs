@@ -1,7 +1,7 @@
 const RemindDB = require('../models/remind.model');
 const BankAccountDB = require('../models/bank_account.model');
 
-const { STANDARD_ACCOUNT, FEE_TRANSFER, sendRemindMail } = require('../utils/util')
+const { STANDARD_ACCOUNT, FEE_TRANSFER, sendRemindMail, sendCancelRemindMail, sendPayRemindMail } = require('../utils/util')
 const { handleTransfer } = require('./bank_account.controller');
 const UserRoleDB = require('../models/user_role.model');
 
@@ -187,7 +187,7 @@ const getReminded = async (req, res, next) => {
 //Hủy nhắc nợ PUT
 //Truyền vô body remindId
 const cancelRemind = async (req, res, next) => {
-    const { remindId } = req.body;
+    const { remindId, message } = req.body;
 
     let remind = await RemindDB.findOne({remind_id: remindId, status: "UNDONE"})
     if (!remind){
@@ -199,6 +199,29 @@ const cancelRemind = async (req, res, next) => {
     let resp = await RemindDB.updateOne({ remind_id: remindId }, { status: "CANCEL" })
 
     if (resp) {
+        try {
+            let curBank = await BankAccountDB.findOne({user_id: req.user.user_id});
+            let recMailAccount;
+            let senderName;
+            let receiverName;
+            if (curBank.account_number == remind.reminder_account_number){
+                let recBank = await BankAccountDB.findOne({account_number: remind.reminded_account_number});
+                recMailAccount = recBank.user_id;
+                senderName = remind.reminder_full_name
+                receiverName = remind.reminded_full_name
+            }else {
+                let recBank = await BankAccountDB.findOne({account_number: remind.reminder_account_number});
+                recMailAccount = recBank.user_id;
+                senderName = remind.reminded_full_name
+                receiverName = remind.reminder_full_name
+            }
+            let recUser = await UserRoleDB.findOne({user_id: recMailAccount});
+
+            sendCancelRemindMail(recUser.email, senderName, receiverName, message);
+        } catch (error) {
+            console.log(error);
+        }
+        
         return res.status(200).json({
             message: "Cancel reminded successfully.",
             data: resp,
@@ -210,7 +233,8 @@ const cancelRemind = async (req, res, next) => {
 }
 
 //Thanh toán nhắc nợ POST
-//Truyền vô body remindId, reminderAccountNumber, debt, message
+//Truyền vô body remindId, message
+/////Note: Phát triển thêm có thể trả trước 1 phần tiền 
 const payRemind = async (req, res, next) => {
     const { remindId, message } = req.body;
 
@@ -246,6 +270,7 @@ const payRemind = async (req, res, next) => {
     if (resp.status == "OK") {
         resp = await RemindDB.updateOne({ remind_id: remindId }, { status: "DONE" });
         if (resp) {
+            sendPayRemindMail(recUser.email, curUser.full_name, recUser.full_name);
             return res.status(200).json({
                 message: "Pay remind successfully."
             });

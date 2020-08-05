@@ -48,7 +48,37 @@ function sendRemindMail(email, senderName, receiveName) {
     from: "lathoai3107@gmail.com",
     to: email,
     subject: "Email thông báo nhắc nợ",
-    text: "Kính gửi " + receiveName + ",\n\nBạn vừa được thông báo trả nợ từ " + senderName + "\nVui lòng đăng nhập vào hệ thống để kiểm tra và thanh toán nợ trong hạn.",
+    text: "Kính gửi " + receiveName + ",\n\nBạn vừa được thông báo trả nợ từ " + senderName + "\nVui lòng đăng nhập vào hệ thống để kiểm tra và thanh toán nợ trong hạn.\nXin vui lòng cảm ơn.",
+  };
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return { status: "ERROR", message: "Can't sen't message at this time. " + error }
+    }
+  });
+  return { status: "OK", message: "Send email successful" }
+}
+
+function sendPayRemindMail(email, senderName, receiveName) {
+  var mailOptions = {
+    from: "lathoai3107@gmail.com",
+    to: email,
+    subject: "Email thông báo" + senderName + "đã trả nợ",
+    text: "Kính gửi " + receiveName + ",\n\n" + senderName + " vừa trả nợ cho bạn.\nVui lòng đăng nhập vào hệ thống để kiểm tra lại tài khoản.\nXin vui lòng cảm ơn.",
+  };
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return { status: "ERROR", message: "Can't sen't message at this time. " + error }
+    }
+  });
+  return { status: "OK", message: "Send email successful" }
+}
+
+function sendCancelRemindMail(email, senderName, receiveName, message) {
+  var mailOptions = {
+    from: "lathoai3107@gmail.com",
+    to: email,
+    subject: "Email thông báo" + senderName + "đã hủy nhắc nợ",
+    text: "Kính gửi " + receiveName + ",\n\n" + senderName + " vừa hủy nhắc nợ cho bạn vì lí do: " + message +"\nVui lòng đăng nhập vào hệ thống để kiểm tra.\nXin vui lòng cảm ơn.",
   };
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -63,6 +93,8 @@ module.exports = {
   generateOTP,
   sendOTPMail,
   sendRemindMail,
+  sendPayRemindMail,
+  sendCancelRemindMail,
   generateAccountNumber,
   FEE_TRANSFER: 1000,
   FEE_TRANSFER_BANK: 3000,
