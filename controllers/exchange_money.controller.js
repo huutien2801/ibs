@@ -2,6 +2,7 @@ const ExchangeMoneyDB = require('../models/exchange_money.model')
 const BankAccount = require('../models/bank_account.model')
 const UserRole = require('../models/user_role.model')
 const Remind = require('../models/remind.model');
+const PartnerDB = require('../models/partner.model');
 const { EXCHANGE_TYPE_ALL, EXCHANGE_TYPE_SEND, EXCHANGE_TYPE_RECEIVE, EXCHANGE_TYPE_DEBT } = require('../utils/util');
 const { first } = require('lodash');
 
@@ -453,14 +454,29 @@ const getAllHistoryAdmin = async (req, res, next) => {
     }
     filter['is_inside'] = false;
 
-    let resp = await ExchangeMoneyDB.find(filter)
+    let resp = await ExchangeMoneyDB.find(filter).sort({send_date: -1})
         .limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
 
-        
+    let today = new Date();
+    let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    let sumMonth = await ExchangeMoneyDB.aggregate([
+        { $match: { created_time_second: { $gte: firstDay.getTime(), $lte: today.getTime() } } },
+        { $group: { _id: null, amount: { $sum: "$money" } } }
+    ])
+
+    let sumTotal = await ExchangeMoneyDB.aggregate([
+        { $group: { _id: null, amount: { $sum: "$money" } } }
+    ])
 
     if (resp) {
         let resCount = await ExchangeMoneyDB.count(filter)
+        let partnerName;
+        if(q.partnerCode){
+            let partner = await PartnerDB.findOne({partner_code: q.partnerCode});
+            partnerName = partner.partner_name;
+            resp.partnerName = partnerName;
+        }
         let sum = 0
         resp.forEach( resp => {
             sum += resp.money
@@ -469,6 +485,8 @@ const getAllHistoryAdmin = async (req, res, next) => {
             message: "Query history successful",
             data: resp,
             sum,
+            sumMonth: sumMonth[0].amount,
+            sumTotal: sumTotal[0].amount,
             resCount
         });
     }
