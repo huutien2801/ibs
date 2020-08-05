@@ -423,39 +423,53 @@ const getUserLogs = async (req, res, next) => {
 //GET param q={"partnerCode":...},start:time,end:time,limit,skip,getTotal=true
 const getAllHistoryAdmin = async (req, res, next) => {
     let q = req.query.q;
-    let startDate = req.query.start;
-    let endDate = req.query.end;
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
-    let getTotal = req.query.total;
 
-    let data = {};
-    if (startDate && endDate) {
-        data = {
-            $where: function () {
-                return this.updated_date > startDate && this.updated_date < endDate;
-            },
-        };
+    let filter = {}
+    if (q.start && !q.end){
+        let startDate = Date.parse(q.start);
+        filter = {
+            created_time_second: {$gt: startDate}
+        }
+    }
+    if (q.end && !q.start){
+        let endDate = Date.parse(q.end);
+        filter = {
+            created_time_second: {$lt: endDate}
+        }
+    }
+    if (q.start && q.end) {
+        let startDate = Date.parse(q.start);
+        let endDate = Date.parse(q.end);
+        filter = {
+            created_time_second: {$gt: startDate, $lt: endDate}
+        }
     }
 
-    if (q.partnerCode) {
-        data['partner_code'] = q.partnerCode;
+    if (q.partnerCode) 
+    {
+        filter['partner_code'] = q.partnerCode;
     }
-    data['is_inside'] = false;
-    data['$sum'] = "$money";
+    filter['is_inside'] = false;
 
-    let resp = await ExchangeMoneyDB.find(data)
+    let resp = await ExchangeMoneyDB.find(filter)
         .limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
 
+        
+
     if (resp) {
-        if (getTotal){
-            let resCount = await ExchangeMoneyDB.count(data)
-            resp.total = resCount
-        }
+        let resCount = await ExchangeMoneyDB.count(filter)
+        let sum = 0
+        resp.forEach( resp => {
+            sum += resp.money
+        })
         return res.status(200).json({
             message: "Query history successful",
             data: resp,
+            sum,
+            resCount
         });
     }
 
