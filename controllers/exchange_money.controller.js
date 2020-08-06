@@ -88,7 +88,7 @@ const getAllById = async (req, res, next) => {
         message: "Can't get history sender at this time."
     })
 }
-
+//sửa lại chỗ aggregate giống admin hộ bạn
 const getRecMoney = async (req, res, next) => {
     let q = JSON.parse(req.query.q);
     let limit = parseInt(req.query.limit);
@@ -134,34 +134,42 @@ const getRecMoney = async (req, res, next) => {
     let respRec = await ExchangeMoneyDB.find(filterRec).sort({send_date: -1}).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
     
-    let sum = 0
-    respRec.forEach( resp => {
-        sum += resp.money
-    })
-
-    let sumMonthFilter = filterRec;
-    sumMonthFilter['created_time_second'] = {$gte: firstDay.getTime(), $lte: today.getTime()};
-    let today = new Date();
-    let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    let sumMonth = await ExchangeMoneyDB.aggregate([
-        { $match: sumMonthFilter },
-        { $group: { _id: null, amount: { $sum: "$money" } } }
-    ])
-
-    let sumTotal = await ExchangeMoneyDB.aggregate([
-        { $match: filterRec},
-        { $group: { _id: null, amount: { $sum: "$money" } } }
-    ])
-
+    
     if (respRec) {
-        return res.status(200).json({
+        let sum = 0
+        respRec.forEach( resp => {
+            sum += resp.money
+        })
+        let respData = {
             message: "Get all history receiver successfully",
             data: respRec,
             total: totalRec,
             sum: sum,
-            sumMonth: sumMonth[0].amount,
-            sumTotal: sumTotal[0].amount,
-        })
+        };
+
+        let sumMonthFilter = filterRec;
+       
+        let today = new Date();
+        let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        sumMonthFilter['created_time_second'] = {$gte: firstDay.getTime(), $lte: today.getTime()};
+        let sumMonth = await ExchangeMoneyDB.aggregate([
+            { $match: sumMonthFilter },
+            { $group: { _id: null, amount: { $sum: "$money" } } }
+        ])
+        if (sumMonth[0]){
+            respData.sumMonth = sumMonth[0].amount;
+        }
+    
+        let sumTotal = await ExchangeMoneyDB.aggregate([
+            { $match: filterRec},
+            { $group: { _id: null, amount: { $sum: "$money" } } }
+        ])
+        if(sumTotal[0]){
+            respData.sumTotal = sumTotal[0].amount;
+        }
+
+
+        return res.status(200).json(respData)
     }
 
     return res.status(400).json({
@@ -169,7 +177,7 @@ const getRecMoney = async (req, res, next) => {
     })
 }
 
-
+//Này cũng sửa chô đó
 const getSenMoney = async (req, res, next) => {
     let q = JSON.parse(req.query.q);
     // let startDate = req.query.start;
@@ -216,35 +224,41 @@ const getSenMoney = async (req, res, next) => {
 
     let respSen = await ExchangeMoneyDB.find(filterSen).sort({send_date: -1}).limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
-    
-    let sum = 0
-    respSen.forEach( resp => {
-        sum += resp.money
-    })
-    
-    let sumMonthFilter = filterRec;
-    sumMonthFilter['created_time_second'] = {$gte: firstDay.getTime(), $lte: today.getTime()};
-    let today = new Date();
-    let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    let sumMonth = await ExchangeMoneyDB.aggregate([
-        { $match: sumMonthFilter },
-        { $group: { _id: null, amount: { $sum: "$money" } } }
-    ])
-
-    let sumTotal = await ExchangeMoneyDB.aggregate([
-        { $match: filterRec},
-        { $group: { _id: null, amount: { $sum: "$money" } } }
-    ])
 
     if (respSen) {
-        return res.status(200).json({
+        let sum = 0
+        respSen.forEach(resp => {
+            sum += resp.money
+        })
+
+        let respData = {
             message: "Get all history sender successfully",
             data: respSen,
             total: totalSen,
-            sum: sum,
-            sumMonth: sumMonth[0].amount,
-            sumTotal: sumTotal[0].amount,
-        })
+            sum: sum
+        }
+
+        let sumMonthFilter = filterSen;
+        let today = new Date();
+        let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        sumMonthFilter['created_time_second'] = { $gte: firstDay.getTime(), $lte: today.getTime() };
+        let sumMonth = await ExchangeMoneyDB.aggregate([
+            { $match: sumMonthFilter },
+            { $group: { _id: null, amount: { $sum: "$money" } } }
+        ])
+        if (sumMonth[0]){
+            respData.sumMonth = sumMonth[0].amount;
+        }
+
+        let sumTotal = await ExchangeMoneyDB.aggregate([
+            { $match: filterSen },
+            { $group: { _id: null, amount: { $sum: "$money" } } }
+        ])
+        if (sumTotal[0]){
+            respData.sumTotal = sumTotal[0].amount;
+        }
+
+        return res.status(200).json(respData);
     }
 
     return res.status(400).json({
@@ -435,6 +449,8 @@ const getAllHistoryAdmin = async (req, res, next) => {
     let skip = parseInt(req.query.offset);
 
     let filter = {}
+    let filterMonth = {};
+    let filterTotal = {};
     if (q.start && !q.end){
         let startDate = Date.parse(q.start);
         filter = {
@@ -458,6 +474,7 @@ const getAllHistoryAdmin = async (req, res, next) => {
     if (q.partnerCode) 
     {
         filter['partner_code'] = q.partnerCode;
+        
     }
     filter['is_inside'] = false;
 
@@ -465,40 +482,51 @@ const getAllHistoryAdmin = async (req, res, next) => {
         .limit(limit ? limit : 20)
         .skip(skip ? skip : 0);
 
-    let today = new Date();
-    let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    let sumMonthFilter = filter;
-    sumMonthFilter['created_time_second'] = { $gte: firstDay.getTime(), $lte: today.getTime() }
-    let sumMonth = await ExchangeMoneyDB.aggregate([
-        { $match: sumMonthFilter },
-        { $group: { _id: null, amount: { $sum: "$money" } } }
-    ])
-
-    let sumTotal = await ExchangeMoneyDB.aggregate([
-        {$match: filter},
-        { $group: { _id: null, amount: { $sum: "$money" } } }
-    ])
-
     if (resp) {
-        let resCount = await ExchangeMoneyDB.count(filter)
         let partnerName;
         if(q.partnerCode){
             let partner = await PartnerDB.findOne({partner_code: q.partnerCode});
             partnerName = partner.partner_name;
             resp.partnerName = partnerName;
         }
+
+        let respData = {
+            message: "Query history successful",
+            data: resp,
+        };
+
+        let today = new Date();
+        let firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+        let sumMonthFilter = filter;
+        sumMonthFilter['created_time_second'] = { $gte: firstDay.getTime(), $lte: today.getTime() }
+    
+        let sumMonth = await ExchangeMoneyDB.aggregate([
+            { $match: sumMonthFilter },
+            { $group: { _id: null, amount: { $sum: "$money" } } }
+        ])
+        if (sumMonth[0]){
+            respData.sumMonth = sumMonth[0].amount;
+        }
+    
+        let sumTotal = await ExchangeMoneyDB.aggregate([
+            {$match: filter},
+            { $group: { _id: null, amount: { $sum: "$money" } } }
+        ])
+        if (sumTotal[0]){
+            respData.sumTotal = sumTotal[0].amount;
+        }
+
+        let resCount = await ExchangeMoneyDB.count(filter)
+        if (resCount){
+            respData.total = resCount;
+        }
+        
         let sum = 0
         resp.forEach( resp => {
             sum += resp.money
         })
-        return res.status(200).json({
-            message: "Query history successful",
-            data: resp,
-            sum,
-            sumMonth: sumMonth[0].amount,
-            sumTotal: sumTotal[0].amount,
-            resCount
-        });
+        respData.sum = sum;
+        return res.status(200).json(respData);
     }
 
     return res.status(400).json({

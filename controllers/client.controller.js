@@ -166,6 +166,7 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
          let newBalance = currentBankAccount.balance - parseInt(finalAmount)
          BankAccount.findOneAndUpdate({ account_number: currentBankAccount.account_number }, { balance: parseInt(newBalance) }, function (err1, response1) {
             if (!err1) {
+               let now = new Date();
                ExchangeMoney.create({
                   partner_code: dataTemp.partner_code,
                   sender_id: currentUserRole.user_id,
@@ -177,7 +178,8 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
                   sender_account_number: currentBankAccount.account_number,
                   sender_full_name: currentUserRole.full_name,
                   receiver_full_name: receiverName,
-                  sign: resp.data.sign
+                  sign: resp.data.sign,
+                  created_time_second: now.getTime(),
                }, function (err2, resp) {
                   if (!err2) {
                      return res.status(200).json({
