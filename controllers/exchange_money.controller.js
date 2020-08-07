@@ -444,13 +444,12 @@ const getUserLogs = async (req, res, next) => {
 //get total money exchange in time
 //GET param q={"partnerCode":...},start:time,end:time,limit,skip,getTotal=true
 const getAllHistoryAdmin = async (req, res, next) => {
-    let q = req.query.q;
+    let q = JSON.parse(req.query.q);
     let limit = parseInt(req.query.limit);
     let skip = parseInt(req.query.offset);
 
     let filter = {}
-    let filterMonth = {};
-    let filterTotal = {};
+
     if (q.start && !q.end){
         let startDate = Date.parse(q.start);
         filter = {
