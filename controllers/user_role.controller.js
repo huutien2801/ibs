@@ -218,6 +218,10 @@ const createUser = async (req, res, next) => {
         data["email"] = email;
     }
 
+    if (role_code == "EMPLOYEE") {
+        data["is_active"] = true;
+    }
+
     let existEmail = await UserRole.findOne({ email });
     if (existEmail != null) {
         return res.status(400).json({
@@ -251,9 +255,7 @@ const createUser = async (req, res, next) => {
         })
     }
 
-    if (role_code == "EMPLOYEE") {
-        data["is_active"] = true;
-    }
+    
 
     if (role_code == "CUSTOMER") {
         var currentTime = new Date();
