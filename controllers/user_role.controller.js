@@ -251,6 +251,10 @@ const createUser = async (req, res, next) => {
         })
     }
 
+    if (role_code == "EMPLOYEE") {
+        data["is_active"] = true;
+    }
+
     if (role_code == "CUSTOMER") {
         var currentTime = new Date();
         let data = {
