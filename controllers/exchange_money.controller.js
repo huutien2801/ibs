@@ -99,6 +99,7 @@ const getRecMoney = async (req, res, next) => {
         let startDateTrans = new Date(q.start)
         startDateTrans.setHours(0,0,0)
         let startDate = startDateTrans.getTime()
+        console.log(startDate)
         // let startDate = Date.parse(q.start);
         //let endDate = Date.parse(q.end);
         filterRec = {
@@ -110,6 +111,7 @@ const getRecMoney = async (req, res, next) => {
         let endDateTrans = new Date(q.end)
         endDateTrans.setHours(24,0,0)
         let endDate = endDateTrans.getTime()
+        console.log(endDate)
         // let endDate = Date.parse(q.end);
         filterRec = {
             created_time_second: {$lt: endDate}
