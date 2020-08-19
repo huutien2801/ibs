@@ -132,7 +132,7 @@ const getRecMoney = async (req, res, next) => {
     if (q.accountNumber){
         filterRec['receiver_account_number'] = q.accountNumber
     } else {
-        const curUser = await BankAccount.findOne({ user_id: req.user.user_id });
+        const curUser = await BankAccount.findOne({ user_id: req.user.user_id, type: "STANDARD" });
         filterRec['receiver_account_number'] = curUser.account_number
     }
     if (q.isInside != undefined){
@@ -236,7 +236,7 @@ const getSenMoney = async (req, res, next) => {
     if (q.accountNumber){
         filterSen['sender_account_number'] = q.accountNumber
     } else {
-        const curUser = await BankAccount.findOne({ user_id: req.user.user_id });
+        const curUser = await BankAccount.findOne({ user_id: req.user.user_id, type: "STANDARD" });
         filterSen['sender_account_number'] = curUser.account_number
     }
     if (q.isInside != undefined){
