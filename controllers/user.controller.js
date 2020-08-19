@@ -227,6 +227,7 @@ const rechargeMoneyInAccount = async (req, res, next) => {
         const update = { balance: newBalance };
         let resp = await BankAccount.findOneAndUpdate(filter, update);
         if (resp) {
+            let now = new Date();
             let currentUserRole = await UserRole.findOne({user_id: account.user_id})
             let partner = await Partner.findOne({partner_code});
             let autoMessage = "Ngân hàng" +  partner.partner_name +  "STK" + body.accountNumber +  body.sendAccountName + "đã chuyển khoản cho bạn"
