@@ -54,10 +54,13 @@ const createBankAccount = async(req, res, next) => {
     const {userId, type, balance, ratioMonth, deposit} = req.body
 
     let filter = {};
+    let currentUserId;
     if (userId){
         filter['user_id'] = userId;
+        currentUserId = userId;
     } else {
         filter['user_id'] = req.user.user_id;
+        currentUserId = req.user.user_id;
     }
 
     let user = await UserRoleDB.findOne(filter);
@@ -82,11 +85,29 @@ const createBankAccount = async(req, res, next) => {
         }
         data["account_number"] = "9700" + user.identity_number;
         data["pin"] = generatePIN();
-        data["balance"] = balance;
+        data["balance"] = parseInt(balance);
         data["expired_date"] = currentTime.setFullYear(currentTime.getFullYear() + 4);
     } else {
         let depositDate = new Date();
         let redeemDate = new Date();
+        let currentBankAccount = await BankAccountDB.findOne({user_id: currentUserId, type: STANDARD_ACCOUNT});
+        if (parseInt(deposit) > parseInt(currentBankAccount.balance))
+        {
+            
+            return res.status(400).json({
+                message: "Your balance is not enough"
+            })
+        }
+        else {
+            let newBalance = parseInt(currentBankAccount.balance) - parseInt(deposit);
+            let updateBalance = await BankAccountDB.findOneAndUpdate({user_id: currentUserId, type: STANDARD_ACCOUNT}, {balance: newBalance})
+            if (!updateBalance)
+            {
+                return res.status(400).json({
+                    message: "Error when creating saving account"
+                })
+            }
+        }
         
         data["deposit"] = deposit;
         data["deposit_date"] = depositDate;
