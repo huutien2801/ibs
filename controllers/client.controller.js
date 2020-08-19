@@ -179,7 +179,7 @@ const confirmOTPTransferMoneyQLBank = async (req, res, next) => {
                   sender_full_name: currentUserRole.full_name,
                   receiver_full_name: receiverName,
                   sign: resp.data.sign,
-                  created_time_second: now.getTime(),
+                  created_time_second: now.getTime()
                }, function (err2, resp) {
                   if (!err2) {
                      return res.status(200).json({

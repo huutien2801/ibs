@@ -241,7 +241,7 @@ const rechargeMoneyInAccount = async (req, res, next) => {
                 receiver_full_name: currentUserRole.full_name,
                 sender_full_name: body.sendAccountName,
                 sign,
-                created_time_second: now.getTime(),
+                created_time_second: now.getTime()
             })
 
             const keyPrivate = new NodeRSA(process.env.RSA_PRIVATE_KEY)
