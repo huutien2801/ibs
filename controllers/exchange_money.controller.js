@@ -96,7 +96,10 @@ const getRecMoney = async (req, res, next) => {
    
     let filterRec = {}
     if (q.start && !q.end){
-        let startDate = Date.parse(q.start);
+        let startDateTrans = new Date(q.start)
+        startDateTrans.setHours(0,0,0)
+        let startDate = startDateTrans.getTime()
+        // let startDate = Date.parse(q.start);
         //let endDate = Date.parse(q.end);
         filterRec = {
             created_time_second: {$gt: startDate}
@@ -104,14 +107,24 @@ const getRecMoney = async (req, res, next) => {
     }
     if (q.end && !q.start){
         //let startDate = Date.parse(q.start);
-        let endDate = Date.parse(q.end);
+        let endDateTrans = new Date(q.end)
+        endDateTrans.setHours(23,59,59)
+        let endDate = endDateTrans.getTime()
+        // let endDate = Date.parse(q.end);
         filterRec = {
             created_time_second: {$lt: endDate}
         }
     }
     if (q.start && q.end) {
-        let startDate = Date.parse(q.start);
-        let endDate = Date.parse(q.end);
+        let startDateTrans = new Date(q.start)
+        startDateTrans.setHours(0,0,0)
+        let startDate = startDateTrans.getTime()
+        
+        let endDateTrans = new Date(q.end)
+        endDateTrans.setHours(23,59,59)
+        let endDate = endDateTrans.getTime()
+        // let startDate = Date.parse(q.start);
+        // let endDate = Date.parse(q.end);
         filterRec = {
             created_time_second: {$gt: startDate, $lt: endDate}
         }
@@ -187,7 +200,10 @@ const getSenMoney = async (req, res, next) => {
    
     let filterSen = {}
     if (q.start && !q.end){
-        let startDate = Date.parse(q.start);
+        let startDateTrans = new Date(q.start)
+        startDateTrans.setHours(0,0,0)
+        let startDate = startDateTrans.getTime()
+        // let startDate = Date.parse(q.start);
         //let endDate = Date.parse(q.end);
         filterSen = {
             created_time_second: {$gt: startDate}
@@ -195,14 +211,24 @@ const getSenMoney = async (req, res, next) => {
     }
     if (q.end && !q.start){
         //let startDate = Date.parse(q.start);
-        let endDate = Date.parse(q.end);
+        let endDateTrans = new Date(q.end)
+        endDateTrans.setHours(23,59,59)
+        let endDate = endDateTrans.getTime()
+        // let endDate = Date.parse(q.end);
         filterSen = {
             created_time_second: {$lt: endDate}
         }
     }
     if (q.start && q.end) {
-        let startDate = Date.parse(q.start);
-        let endDate = Date.parse(q.end);
+        let startDateTrans = new Date(q.start)
+        startDateTrans.setHours(0,0,0)
+        let startDate = startDateTrans.getTime()
+
+        let endDateTrans = new Date(q.end)
+        endDateTrans.setHours(23,59,59)
+        let endDate = endDateTrans.getTime()
+        // let startDate = Date.parse(q.start);
+        // let endDate = Date.parse(q.end);
         filterSen = {
             created_time_second: {$gt: startDate, $lt: endDate}
         }
