@@ -110,7 +110,7 @@ const getRecMoney = async (req, res, next) => {
         //let startDate = Date.parse(q.start);
         let endDateTrans = new Date(q.end)
         endDateTrans.setHours(24,0,0)
-        let endDate = endDateTrans.getTime()
+        let endDate = endDateTrans.getTime() + 17*60*60*1000
         console.log(endDate)
         // let endDate = Date.parse(q.end);
         filterRec = {
@@ -124,7 +124,7 @@ const getRecMoney = async (req, res, next) => {
         
         let endDateTrans = new Date(q.end)
         endDateTrans.setHours(24,0,0)
-        let endDate = endDateTrans.getTime()
+        let endDate = endDateTrans.getTime() + 17*60*60*1000
         // let startDate = Date.parse(q.start);
         // let endDate = Date.parse(q.end);
         filterRec = {
@@ -215,7 +215,7 @@ const getSenMoney = async (req, res, next) => {
         //let startDate = Date.parse(q.start);
         let endDateTrans = new Date(q.end)
         endDateTrans.setHours(24,0,0)
-        let endDate = endDateTrans.getTime()
+        let endDate = endDateTrans.getTime() + 17*60*60*1000
         // let endDate = Date.parse(q.end);
         filterSen = {
             created_time_second: {$lt: endDate}
@@ -228,7 +228,7 @@ const getSenMoney = async (req, res, next) => {
 
         let endDateTrans = new Date(q.end)
         endDateTrans.setHours(24,0,0)
-        let endDate = endDateTrans.getTime()
+        let endDate = endDateTrans.getTime() + 17*60*60*1000
         // let startDate = Date.parse(q.start);
         // let endDate = Date.parse(q.end);
         filterSen = {
